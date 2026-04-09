@@ -740,6 +740,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[test]
     fn resolve_responses_url_prefers_explicit_endpoint_env() {
         let _endpoint_guard = EnvGuard::set(

@@ -1,0 +1,48 @@
+[skill]
+name = "watchdog"
+description = "Monitorea y reinicia servicios automáticamente. Detecta caídas y recovery automático."
+version = "2.0.0"
+author = "zeroclaw"
+tags = ["monitoring", "auto-restart", "recovery", "health"]
+
+[[tools]]
+name = "check_zeroclaw"
+description = "Check zeroclaw health"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise curl -s http://localhost:42617/health"
+
+[[tools]]
+name = "check_qdrant"
+description = "Check qdrant health"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise curl -s http://localhost:6333/collections"
+
+[[tools]]
+name = "docker_ps"
+description = "List docker containers"
+kind = "shell"
+command = "docker ps -a"
+
+[[tools]]
+name = "restart_zeroclaw"
+description = "Restart zeroclaw"
+kind = "shell"
+command = "docker restart zeroclaw-enterprise"
+
+[[tools]]
+name = "restart_qdrant"
+description = "Restart qdrant"
+kind = "shell"
+command = "docker restart zeroclaw-qdrant"
+
+[[tools]]
+name = "get_logs"
+description = "Get zeroclaw logs"
+kind = "shell"
+command = "docker logs zeroclaw-enterprise --tail=30"
+
+[[tools]]
+name = "docker_start"
+description = "Start container"
+kind = "shell"
+command = "docker start zeroclaw-enterprise"

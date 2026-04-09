@@ -1,0 +1,30 @@
+[skill]
+name = "code-guardian"
+description = "Protege el sistema de código defectuoso y configuraciones inválidas."
+version = "2.0.0"
+author = "zeroclaw"
+tags = ["protection", "validation", "safety"]
+
+[[tools]]
+name = "check_health"
+description = "Check zeroclaw health"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise curl -s http://localhost:42617/health"
+
+[[tools]]
+name = "check_qdrant"
+description = "Check qdrant health"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise curl -s http://localhost:6333/collections"
+
+[[tools]]
+name = "docker_ps"
+description = "List containers"
+kind = "shell"
+command = "docker ps -a"
+
+[[tools]]
+name = "docker_validate"
+description = "Validate compose config"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise docker compose config"

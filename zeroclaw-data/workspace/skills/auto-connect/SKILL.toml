@@ -1,0 +1,24 @@
+[skill]
+name = "auto-connect"
+description = "Conecta servicios automáticamente. Valida tokens y verifica conexiones."
+version = "2.0.0"
+author = "zeroclaw"
+tags = ["setup", "connection", "automation"]
+
+[[tools]]
+name = "test_telegram"
+description = "Test telegram bot"
+kind = "shell"
+command = "curl -s https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getMe"
+
+[[tools]]
+name = "test_qdrant"
+description = "Test qdrant"
+kind = "shell"
+command = "curl -s http://localhost:6333/collections"
+
+[[tools]]
+name = "restart_zero"
+description = "Restart zeroclaw"
+kind = "shell"
+command = "docker restart zeroclaw-enterprise"

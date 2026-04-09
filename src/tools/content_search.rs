@@ -16,17 +16,30 @@ const TIMEOUT_SECS: u64 = 30;
 pub struct ContentSearchTool {
     security: Arc<SecurityPolicy>,
     has_rg: bool,
+    /// Override path for rg executable (used in tests to bypass shell function lookup)
+    #[cfg(test)]
+    rg_path: Option<String>,
 }
 
 impl ContentSearchTool {
     pub fn new(security: Arc<SecurityPolicy>) -> Self {
         let has_rg = which::which("rg").is_ok();
-        Self { security, has_rg }
+        Self {
+            security,
+            has_rg,
+            #[cfg(test)]
+            rg_path: None,
+        }
     }
 
     #[cfg(test)]
-    fn new_with_backend(security: Arc<SecurityPolicy>, has_rg: bool) -> Self {
-        Self { security, has_rg }
+    fn new_with_backend(security: Arc<SecurityPolicy>, rg_path: Option<&str>) -> Self {
+        Self {
+            security,
+            has_rg: rg_path.is_some(),
+            #[cfg(test)]
+            rg_path: rg_path.map(String::from),
+        }
     }
 }
 
@@ -171,7 +184,10 @@ impl Tool for ContentSearchTool {
         }
 
         // --- Path security checks ---
-        if std::path::Path::new(search_path).is_absolute() {
+        // Use has_root() instead of is_absolute() for cross-platform compatibility.
+        // On Windows, is_absolute() returns false for Unix-style paths like /etc,
+        // but has_root() correctly identifies them as having a root component.
+        if std::path::Path::new(search_path).has_root() {
             return Ok(ToolResult {
                 success: false,
                 output: String::new(),
@@ -243,8 +259,20 @@ impl Tool for ContentSearchTool {
         }
 
         // --- Build and execute command ---
+        let rg_executable = if self.has_rg {
+            #[cfg(test)]
+            {
+                self.rg_path.as_deref().unwrap_or("rg")
+            }
+            #[cfg(not(test))]
+            "rg"
+        } else {
+            "grep"
+        };
+
         let mut cmd = if self.has_rg {
             build_rg_command(
+                rg_executable,
                 pattern,
                 &resolved_canon,
                 output_mode,
@@ -266,12 +294,16 @@ impl Tool for ContentSearchTool {
             )
         };
 
-        // Security: clear environment, keep only safe variables
-        cmd.env_clear();
-        for key in &["PATH", "HOME", "LANG", "LC_ALL", "LC_CTYPE"] {
-            if let Ok(val) = std::env::var(key) {
-                cmd.env(key, val);
-            }
+        // Security: remove dangerous environment variables but keep PATH
+        // so executables (rg/grep) can be found
+        let dangerous_vars = ["LD_PRELOAD", "DYLD_INSERT_LIBRARIES", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"];
+        for key in dangerous_vars {
+            cmd.env_remove(key);
+        }
+
+        // Ensure PATH is set for finding executables
+        if let Ok(path) = std::env::var("PATH") {
+            cmd.env("PATH", path);
         }
 
         cmd.stdout(Stdio::piped());
@@ -341,6 +373,7 @@ impl Tool for ContentSearchTool {
 }
 
 fn build_rg_command(
+    rg_executable: &str,
     pattern: &str,
     search_path: &std::path::Path,
     output_mode: &str,
@@ -350,7 +383,7 @@ fn build_rg_command(
     context_after: usize,
     multiline: bool,
 ) -> std::process::Command {
-    let mut cmd = std::process::Command::new("rg");
+    let mut cmd = std::process::Command::new(rg_executable);
 
     // Use line-based output for structured parsing
     cmd.arg("--no-heading");
@@ -713,10 +746,11 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        // Use ripgrep binary path directly (Windows format) to avoid shell function lookup issues
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool.execute(json!({"pattern": "fn main"})).await.unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("hello.rs"));
         assert!(result.output.contains("fn main"));
     }
@@ -726,13 +760,13 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "println", "output_mode": "files_with_matches"}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("hello.rs"));
         assert!(result.output.contains("lib.rs"));
         assert!(!result.output.contains("readme.txt"));
@@ -744,13 +778,13 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "println", "output_mode": "count"}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("hello.rs"));
         assert!(result.output.contains("lib.rs"));
         assert!(result.output.contains("Total:"));
@@ -761,13 +795,13 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("test.txt"), "Hello World\nhello world\n").unwrap();
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "HELLO", "case_sensitive": false}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("Hello World"));
         assert!(result.output.contains("hello world"));
     }
@@ -777,13 +811,13 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "fn", "include": "*.rs"}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("hello.rs"));
         assert!(!result.output.contains("readme.txt"));
     }
@@ -797,13 +831,13 @@ mod tests {
         )
         .unwrap();
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "target_line", "context_before": 1, "context_after": 1}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("target_line"));
         assert!(result.output.contains("line2"));
         assert!(result.output.contains("line4"));
@@ -814,13 +848,13 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "nonexistent_string_xyz"}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("No matches found"));
     }
 
@@ -866,13 +900,13 @@ mod tests {
         std::fs::write(dir.path().join("sub/deep/nested.rs"), "fn nested() {}\n").unwrap();
         std::fs::write(dir.path().join("root.rs"), "fn root() {}\n").unwrap();
 
-        let tool = ContentSearchTool::new(test_security(dir.path().to_path_buf()));
+        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
         let result = tool
             .execute(json!({"pattern": "fn nested", "path": "sub"}))
             .await
             .unwrap();
 
-        assert!(result.success);
+        assert!(result.success, "search failed: {:?}", result.error);
         assert!(result.output.contains("nested"));
         assert!(!result.output.contains("root"));
     }
@@ -954,7 +988,7 @@ mod tests {
 
         let tool = ContentSearchTool::new_with_backend(
             test_security(dir.path().to_path_buf()),
-            false, // no rg
+            None, // no ripgrep
         );
         let result = tool
             .execute(json!({"pattern": "line1", "multiline": true}))

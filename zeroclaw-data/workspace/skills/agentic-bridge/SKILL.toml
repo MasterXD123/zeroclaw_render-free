@@ -1,0 +1,12 @@
+[skill]
+name = "agentic-bridge"
+description = "Capa de inteligencia para modelos. Hace modelos básicos comportarse de forma más agentic. Se activa por default en el system prompt."
+version = "1.0.0"
+author = "zeroclaw"
+tags = ["bridge", "intelligence", "system-prompt", "agentic"]
+
+[[tools]]
+name = "noop"
+description = "No operation tool - no hace nada"
+kind = "shell"
+command = "echo 'agentic-bridge active'"

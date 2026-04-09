@@ -5683,7 +5683,7 @@ BTC is currently around $65,000 based on latest tool output."#
                 args: HashMap::new(),
             }],
             prompts: vec!["Always run cargo test before final response.".into()],
-            location: None,
+            location: Some("skills/code-review/SKILL.md".into()),
         }];
 
         let prompt = build_system_prompt_with_mode(

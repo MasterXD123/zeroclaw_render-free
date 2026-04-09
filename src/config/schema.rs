@@ -2192,7 +2192,7 @@ impl Default for WebhookAuditConfig {
 /// risk approval gates, and per-policy budgets.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct AutonomyConfig {
-    /// Autonomy level: `read_only`, `supervised` (default), or `full`.
+    /// Autonomy level: `read_only`, `supervised`, or `full` (default for SuperAgent).
     pub level: AutonomyLevel,
     /// Restrict absolute filesystem paths to workspace-relative references. Default: `true`.
     /// Resolved paths outside the workspace still require `allowed_roots`.
@@ -2263,7 +2263,7 @@ fn is_valid_env_var_name(name: &str) -> bool {
 impl Default for AutonomyConfig {
     fn default() -> Self {
         Self {
-            level: AutonomyLevel::Supervised,
+            level: AutonomyLevel::Full,
             workspace_only: true,
             allowed_commands: vec![
                 "git".into(),
@@ -5471,6 +5471,7 @@ impl Config {
     }
 }
 
+#[allow(clippy::unused_async)]
 async fn sync_directory(path: &Path) -> Result<()> {
     #[cfg(unix)]
     {
@@ -5496,6 +5497,7 @@ mod tests {
     #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
     use std::path::PathBuf;
+    #[cfg(unix)]
     use tempfile::TempDir;
     use tokio::sync::{Mutex, MutexGuard};
     use tokio::test;
@@ -5603,7 +5605,7 @@ mod tests {
     #[test]
     async fn autonomy_config_default() {
         let a = AutonomyConfig::default();
-        assert_eq!(a.level, AutonomyLevel::Supervised);
+        assert_eq!(a.level, AutonomyLevel::Full);
         assert!(a.workspace_only);
         assert!(a.allowed_commands.contains(&"git".to_string()));
         assert!(a.allowed_commands.contains(&"cargo".to_string()));
@@ -5861,7 +5863,7 @@ default_temperature = 0.7
         assert!(parsed.default_provider.is_none());
         assert_eq!(parsed.observability.backend, "none");
         assert_eq!(parsed.observability.runtime_trace_mode, "none");
-        assert_eq!(parsed.autonomy.level, AutonomyLevel::Supervised);
+        assert_eq!(parsed.autonomy.level, AutonomyLevel::Full);
         assert_eq!(parsed.runtime.kind, "native");
         assert!(!parsed.heartbeat.enabled);
         assert!(parsed.channels_config.cli);
@@ -7559,6 +7561,7 @@ default_model = "legacy-model"
     }
 
     #[test]
+    #[cfg(not(windows))] // HOME env var not used on Windows
     async fn persist_active_workspace_marker_is_cleared_for_default_config_dir() {
         let _env_guard = env_override_lock().await;
         let temp_home =

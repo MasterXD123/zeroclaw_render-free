@@ -1,0 +1,30 @@
+[skill]
+name = "features"
+description = "Lista todas las capabilities y features del sistema."
+version = "2.0.0"
+author = "zeroclaw"
+tags = ["features", "capabilities", "commands", "help"]
+
+[[tools]]
+name = "list_skills"
+description = "Lista skills instalados"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw skills list"
+
+[[tools]]
+name = "list_crons"
+description = "Lista cron jobs activos"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw cron list"
+
+[[tools]]
+name = "system_stats"
+description = "Stats del sistema"
+kind = "shell"
+command = "docker stats --no-stream"
+
+[[tools]]
+name = "check_config"
+description = "Ver config"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw config schema"

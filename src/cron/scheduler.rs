@@ -515,6 +515,7 @@ mod tests {
         format!("{prefix}-{}", uuid::Uuid::new_v4())
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_success() {
         let tmp = TempDir::new().unwrap();
@@ -528,6 +529,7 @@ mod tests {
         assert!(output.contains("status=exit status: 0"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_failure() {
         let tmp = TempDir::new().unwrap();
@@ -541,6 +543,7 @@ mod tests {
         assert!(output.contains("status=exit status:"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_times_out() {
         let tmp = TempDir::new().unwrap();
@@ -555,6 +558,7 @@ mod tests {
         assert!(output.contains("job timed out after"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_disallowed_command() {
         let tmp = TempDir::new().unwrap();
@@ -569,6 +573,7 @@ mod tests {
         assert!(output.to_lowercase().contains("not allowed"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_forbidden_path_argument() {
         let tmp = TempDir::new().unwrap();
@@ -584,6 +589,7 @@ mod tests {
         assert!(output.contains("/etc/passwd"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_forbidden_option_assignment_path_argument() {
         let tmp = TempDir::new().unwrap();
@@ -599,6 +605,7 @@ mod tests {
         assert!(output.contains("/etc/passwd"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_forbidden_short_option_attached_path_argument() {
         let tmp = TempDir::new().unwrap();
@@ -614,6 +621,7 @@ mod tests {
         assert!(output.contains("/etc/passwd"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_tilde_user_path_argument() {
         let tmp = TempDir::new().unwrap();
@@ -629,6 +637,7 @@ mod tests {
         assert!(output.contains("~root/.ssh/id_rsa"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_input_redirection_path_bypass() {
         let tmp = TempDir::new().unwrap();
@@ -643,6 +652,7 @@ mod tests {
         assert!(output.to_lowercase().contains("not allowed"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_readonly_mode() {
         let tmp = TempDir::new().unwrap();
@@ -657,6 +667,7 @@ mod tests {
         assert!(output.contains("read-only"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_job_command_blocks_rate_limited() {
         let tmp = TempDir::new().unwrap();
@@ -671,6 +682,7 @@ mod tests {
         assert!(output.contains("rate limit exceeded"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn execute_job_with_retry_recovers_after_first_failure() {
         let tmp = TempDir::new().unwrap();
@@ -693,6 +705,7 @@ mod tests {
         assert!(output.contains("recovered"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn execute_job_with_retry_exhausts_attempts() {
         let tmp = TempDir::new().unwrap();
@@ -708,6 +721,7 @@ mod tests {
         assert!(output.contains("always_missing_for_retry_test"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_agent_job_returns_error_without_provider_key() {
         let tmp = TempDir::new().unwrap();
@@ -722,6 +736,7 @@ mod tests {
         assert!(output.contains("agent job failed:"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_agent_job_blocks_readonly_mode() {
         let tmp = TempDir::new().unwrap();
@@ -738,6 +753,7 @@ mod tests {
         assert!(output.contains("read-only"));
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn run_agent_job_blocks_rate_limited() {
         let tmp = TempDir::new().unwrap();
@@ -774,6 +790,7 @@ mod tests {
         assert!(entry["last_error"].is_null());
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[tokio::test]
     async fn process_due_jobs_failure_does_not_mark_component_unhealthy() {
         let tmp = TempDir::new().unwrap();

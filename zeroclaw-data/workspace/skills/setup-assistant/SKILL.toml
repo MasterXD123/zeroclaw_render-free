@@ -1,0 +1,30 @@
+[skill]
+name = "setup-assistant"
+description = "Guía para conectar APIs: GitHub, Notion, Telegram. Solo para configuración de servicios específicos."
+version = "2.0.0"
+author = "zeroclaw"
+tags = ["setup", "api-keys", "github", "telegram"]
+
+[[tools]]
+name = "check_services"
+description = "Ver containers activos"
+kind = "shell"
+command = "docker ps"
+
+[[tools]]
+name = "check_logs"
+description = "Ver logs"
+kind = "shell"
+command = "docker logs zeroclaw-enterprise --tail=20"
+
+[[tools]]
+name = "restart_zeroclaw"
+description = "Reiniciar zeroclaw"
+kind = "shell"
+command = "docker restart zeroclaw-enterprise"
+
+[[tools]]
+name = "read_config"
+description = "Ver schema config"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw config schema"

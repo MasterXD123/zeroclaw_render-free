@@ -11,14 +11,14 @@ use zeroclaw::config::{AutonomyConfig, Config};
 // Autonomy configuration defaults and validation
 // ═════════════════════════════════════════════════════════════════════════════
 
-/// Default autonomy level is "supervised".
+/// Default autonomy level is "full" for SuperAgent autonomy.
 #[test]
-fn security_default_autonomy_is_supervised() {
+fn security_default_autonomy_is_full() {
     let config = AutonomyConfig::default();
     assert_eq!(
         format!("{:?}", config.level),
-        "Supervised",
-        "Default autonomy level should be Supervised"
+        "Full",
+        "Default autonomy level should be Full for SuperAgent"
     );
 }
 
@@ -86,8 +86,8 @@ fn security_full_config_has_autonomy() {
     let config = Config::default();
     assert_eq!(
         format!("{:?}", config.autonomy.level),
-        "Supervised",
-        "Default config autonomy should be Supervised"
+        "Full",
+        "Default config autonomy should be Full for SuperAgent"
     );
 }
 

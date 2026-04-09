@@ -1,0 +1,42 @@
+[skill]
+name = "onboarding"
+description = "Muestra estado del sistema, sugiere qué activar, y ayuda con configuración inicial."
+version = "2.0.0"
+author = "zeroclaw"
+tags = ["onboarding", "setup", "welcome", "status"]
+
+[[tools]]
+name = "check_skills"
+description = "Lista los skills instalados"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw skills list"
+
+[[tools]]
+name = "check_cron"
+description = "Lista los cron jobs activos"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw cron list"
+
+[[tools]]
+name = "check_config"
+description = "Lista schema de config"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw config schema"
+
+[[tools]]
+name = "check_healer"
+description = "Ver self-healer activo"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise zeroclaw cron list"
+
+[[tools]]
+name = "system_stats"
+description = "Stats de containers"
+kind = "shell"
+command = "docker stats --no-stream"
+
+[[tools]]
+name = "check_telegram"
+description = "Ver si telegram configurado"
+kind = "shell"
+command = "docker exec zeroclaw-enterprise env"

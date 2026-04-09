@@ -2537,14 +2537,18 @@ mod tests {
 
     #[test]
     fn sanitize_attachment_filename_strips_path_traversal() {
+        // Forward slash path traversal is always stripped
         assert_eq!(
             SlackChannel::sanitize_attachment_filename("../../secret.txt").as_deref(),
             Some("secret.txt")
         );
-        assert_eq!(
-            SlackChannel::sanitize_attachment_filename(r"..\\..\\secret.txt").as_deref(),
-            Some("..__..__secret.txt")
-        );
+        // On Windows, backslash is a path separator so file_name() returns just "secret.txt"
+        // On Unix, backslashes are preserved as literal characters
+        let backslash_result = SlackChannel::sanitize_attachment_filename(r"..\\..\\secret.txt");
+        #[cfg(windows)]
+        assert_eq!(backslash_result.as_deref(), Some("secret.txt"), "Windows: backslashes are path separators");
+        #[cfg(not(windows))]
+        assert_eq!(backslash_result.as_deref(), Some("..__..__secret.txt"), "Unix: backslashes are preserved");
         assert!(SlackChannel::sanitize_attachment_filename("..").is_none());
     }
 

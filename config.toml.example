@@ -1,0 +1,146 @@
+# ZeroClaw Enterprise - Example Configuration
+# Copy this file to config.toml and customize
+
+# API Key (REQUIRED)
+api_key = "your_encrypted_api_key_here"
+
+# Provider settings
+default_provider = "openrouter"
+default_model = "openrouter/google/gemma-4-27b-it"
+default_temperature = 0.7
+
+[model_providers]
+
+[observability]
+backend = "none"
+runtime_trace_mode = "none"
+
+[autonomy]
+# "read_only", "supervised", or "full"
+level = "supervised"
+workspace_only = true
+
+# Commands allowed to execute (empty = none allowed)
+allowed_commands = [
+    "git",
+    "npm",
+    "cargo",
+    "ls",
+    "cat",
+    "grep",
+    "find",
+    "echo",
+    "pwd",
+]
+
+forbidden_paths = [
+    "/etc",
+    "/root",
+    "/home",
+    "/usr",
+    "/bin",
+    "/sbin",
+    "/lib",
+    "/opt",
+    "/boot",
+    "/dev",
+    "/proc",
+    "/sys",
+    "/var",
+    "/tmp",
+]
+
+max_actions_per_hour = 20
+max_cost_per_day_cents = 500
+require_approval_for_medium_risk = true
+block_high_risk_commands = true
+
+auto_approve = [
+    "file_read",
+    "memory_recall",
+]
+
+[security.sandbox]
+backend = "auto"
+
+[security.resources]
+max_memory_mb = 512
+max_cpu_time_seconds = 60
+max_subprocesses = 10
+memory_monitoring = true
+
+[security.audit]
+enabled = true
+log_path = "audit.log"
+
+[security.otp]
+enabled = false
+method = "totp"
+
+[security.estop]
+enabled = false
+
+[runtime]
+kind = "native"
+
+[scheduler]
+enabled = true
+max_tasks = 64
+max_concurrent = 4
+
+[agent]
+compact_context = false
+max_tool_iterations = 10
+max_history_messages = 50
+parallel_tools = false
+tool_dispatcher = "auto"
+
+[skills]
+open_skills_enabled = false
+prompt_injection_mode = "full"
+
+[heartbeat]
+enabled = false
+interval_minutes = 30
+
+[cron]
+enabled = true
+max_run_history = 50
+
+[channels_config]
+cli = true
+message_timeout_secs = 300
+
+# Telegram channel (optional)
+# [channels_config.telegram]
+# bot_token = "your_bot_token"
+# allowed_users = ["your_user_id"]
+
+[memory]
+backend = "sqlite"
+auto_save = true
+hygiene_enabled = true
+
+[gateway]
+port = 42617
+host = "127.0.0.0"
+require_pairing = true
+allow_public_bind = false
+
+[secrets]
+encrypt = true
+
+[identity]
+format = "openclaw"
+
+[cost]
+enabled = false
+daily_limit_usd = 10.0
+monthly_limit_usd = 100.0
+warn_at_percent = 80
+
+[browser]
+enabled = false
+
+[http_request]
+enabled = false

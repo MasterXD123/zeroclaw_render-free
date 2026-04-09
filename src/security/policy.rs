@@ -922,8 +922,9 @@ impl SecurityPolicy {
         // Expand "~" for consistent matching with forbidden paths and allowlists.
         let expanded_path = expand_user_path(path);
 
-        // Block absolute paths when workspace_only is set
-        if self.workspace_only && expanded_path.is_absolute() {
+        // Block Unix absolute paths (starting with /) explicitly — Path::is_absolute()
+        // is platform-specific and returns false on Windows for "/".
+        if self.workspace_only && (expanded_path.is_absolute() || path.starts_with('/')) {
             return false;
         }
 

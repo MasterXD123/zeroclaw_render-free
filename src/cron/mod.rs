@@ -504,6 +504,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let mut config = test_config(&tmp);
         config.autonomy.allowed_commands = vec!["echo".into(), "touch".into()];
+        config.autonomy.level = crate::security::AutonomyLevel::Supervised;
 
         let denied = add_shell_job(
             &config,
@@ -538,6 +539,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let mut config = test_config(&tmp);
         config.autonomy.allowed_commands = vec!["echo".into(), "touch".into()];
+        config.autonomy.level = crate::security::AutonomyLevel::Supervised;
         let job = make_job(&config, "*/5 * * * *", None, "echo original");
 
         let denied = update_shell_job_with_approval(
@@ -573,6 +575,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let mut config = test_config(&tmp);
         config.autonomy.allowed_commands = vec!["echo".into(), "touch".into()];
+        config.autonomy.level = crate::security::AutonomyLevel::Supervised;
         let job = make_job(&config, "*/5 * * * *", None, "echo original");
 
         let result = run_update(
@@ -631,6 +634,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let mut config = test_config(&tmp);
         config.autonomy.allowed_commands = vec!["echo".into(), "touch".into()];
+        config.autonomy.level = crate::security::AutonomyLevel::Supervised;
         let at = chrono::Utc::now() + chrono::Duration::hours(1);
 
         let denied = add_once_at_validated(&config, at, "touch at-medium", false);

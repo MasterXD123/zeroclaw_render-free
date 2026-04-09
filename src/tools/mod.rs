@@ -17,6 +17,10 @@
 
 pub mod browser;
 pub mod browser_open;
+pub mod calculator;
+pub mod code_runner;
+pub mod decision;
+pub mod validator;
 pub mod cli_discovery;
 pub mod composio;
 pub mod content_search;
@@ -31,7 +35,9 @@ pub mod file_edit;
 pub mod file_read;
 pub mod file_write;
 pub mod git_operations;
+pub mod github;
 pub mod glob_search;
+pub mod google_workspace;
 #[cfg(feature = "hardware")]
 pub mod hardware_board_info;
 #[cfg(feature = "hardware")]
@@ -44,6 +50,7 @@ pub mod memory_forget;
 pub mod memory_recall;
 pub mod memory_store;
 pub mod model_routing_config;
+pub mod notion;
 pub mod pdf_read;
 pub mod proxy_config;
 pub mod pushover;
@@ -51,12 +58,16 @@ pub mod schedule;
 pub mod schema;
 pub mod screenshot;
 pub mod shell;
+pub mod task_tracker;
+pub mod time_tracker;
 pub mod traits;
 pub mod web_fetch;
 pub mod web_search_tool;
 
 pub use browser::{BrowserTool, ComputerUseConfig};
 pub use browser_open::BrowserOpenTool;
+pub use calculator::CalculatorTool;
+pub use code_runner::CodeRunnerTool;
 pub use composio::ComposioTool;
 pub use content_search::ContentSearchTool;
 pub use cron_add::CronAddTool;
@@ -65,12 +76,16 @@ pub use cron_remove::CronRemoveTool;
 pub use cron_run::CronRunTool;
 pub use cron_runs::CronRunsTool;
 pub use cron_update::CronUpdateTool;
+pub use decision::DecisionTool;
+pub use validator::ValidatorTool;
 pub use delegate::DelegateTool;
 pub use file_edit::FileEditTool;
 pub use file_read::FileReadTool;
 pub use file_write::FileWriteTool;
 pub use git_operations::GitOperationsTool;
+pub use github::GitHubTool;
 pub use glob_search::GlobSearchTool;
+pub use google_workspace::GoogleWorkspaceTool;
 #[cfg(feature = "hardware")]
 pub use hardware_board_info::HardwareBoardInfoTool;
 #[cfg(feature = "hardware")]
@@ -83,6 +98,7 @@ pub use memory_forget::MemoryForgetTool;
 pub use memory_recall::MemoryRecallTool;
 pub use memory_store::MemoryStoreTool;
 pub use model_routing_config::ModelRoutingConfigTool;
+pub use notion::NotionTool;
 pub use pdf_read::PdfReadTool;
 pub use proxy_config::ProxyConfigTool;
 pub use pushover::PushoverTool;
@@ -91,6 +107,8 @@ pub use schedule::ScheduleTool;
 pub use schema::{CleaningStrategy, SchemaCleanr};
 pub use screenshot::ScreenshotTool;
 pub use shell::ShellTool;
+pub use task_tracker::TaskTrackerTool;
+pub use time_tracker::TimeTrackerTool;
 pub use traits::Tool;
 #[allow(unused_imports)]
 pub use traits::{ToolResult, ToolSpec};
@@ -216,6 +234,12 @@ pub fn all_tools_with_runtime(
         Arc::new(FileEditTool::new(security.clone())),
         Arc::new(GlobSearchTool::new(security.clone())),
         Arc::new(ContentSearchTool::new(security.clone())),
+        Arc::new(CalculatorTool::new()),
+        Arc::new(TaskTrackerTool::new()),
+        Arc::new(TimeTrackerTool::new()),
+        Arc::new(DecisionTool::new()),
+        Arc::new(CodeRunnerTool::new()),
+        Arc::new(ValidatorTool::new()),
         Arc::new(CronAddTool::new(config.clone(), security.clone())),
         Arc::new(CronListTool::new(config.clone())),
         Arc::new(CronRemoveTool::new(config.clone(), security.clone())),
@@ -239,6 +263,9 @@ pub fn all_tools_with_runtime(
             security.clone(),
             workspace_dir.to_path_buf(),
         )),
+        Arc::new(GitHubTool::new(security.clone())),
+        Arc::new(GoogleWorkspaceTool::new(security.clone())),
+        Arc::new(NotionTool::new(security.clone())),
     ];
 
     if browser_config.enabled {
