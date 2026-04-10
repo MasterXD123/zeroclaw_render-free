@@ -58,7 +58,7 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
     printf '%s\n' \
         'workspace_dir = "/zeroclaw-data/workspace"' \
         'default_provider = "openrouter"' \
-        'default_model = "openrouter/google/gemma-4-27b-it"' \
+        'default_model = "openrouter/free"' \
         'default_temperature = 0.7' \
         '' \
         '[gateway]' \
@@ -118,8 +118,9 @@ WORKDIR /zeroclaw-data
 USER 65534:65534
 
 # Usar variable PORT de entorno (Render la provee automáticamente)
+# Si PORT no está definido, usa 10000 por defecto
 ENV PORT=${PORT:-10000}
 
-EXPOSE ${PORT}
+EXPOSE 10000
 ENTRYPOINT ["zeroclaw"]
-CMD ["daemon", "--port", "$PORT", "--host", "[::]"]
+CMD ["daemon", "--port", "10000", "--host", "[::]"]

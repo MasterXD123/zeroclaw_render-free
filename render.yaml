@@ -14,7 +14,7 @@ services:
       - key: PROVIDER
         value: openrouter
       - key: ZEROCLAW_MODEL
-        value: openrouter/google/gemma-4-27b-it
+        value: openrouter/free
       - key: ZEROCLAW_ALLOW_PUBLIC_BIND
         value: "true"
     

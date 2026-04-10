@@ -85,11 +85,11 @@ Antes de hacer deploy, verifica que tienes todo listo:
 
 | Modelo | Costo/Mes | Calidad | Notas |
 |--------|-----------|---------|-------|
-| `openrouter/free` | $0 | ⭐⭐ | Limitado, a veces falla |
-| `openrouter/google/gemma-4-27b-it` | ~$0.10 | ⭐⭐⭐⭐ | Mejor relación calidad/precio |
-| `openrouter/anthropic/claude-3-haiku` | ~$0.20 | ⭐⭐⭐⭐⭐ | Rápido y excelente |
+| `openrouter/free` | $0 | ⭐⭐ | **Por defecto**, funciona bien para pruebas |
+| `openrouter/google/gemma-4-27b-it` | ~$0.10 | ⭐⭐⭐⭐ | Mejor calidad (requiere más configuración) |
+| `openrouter/anthropic/claude-3-haiku` | ~$0.20 | ⭐⭐⭐⭐⭐ | Rápido y excelente (requiere más configuración) |
 
-> ⚠️ **Importante**: El modelo `openrouter/free` es muy limitado. Para mejor experiencia, usa `gemma-4-27b-it` o `claude-3-haiku`.
+> ⚠️ **Nota**: El modelo por defecto es `openrouter/free` que es gratuito. Otros modelos requieren más créditos y configuración.
 
 ---
 
