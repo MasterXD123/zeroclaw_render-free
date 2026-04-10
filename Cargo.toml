@@ -95,7 +95,7 @@ meval = "0.2"
 jsonschema = "0.18"
 
 # QuickJS JavaScript sandbox
-rquickjs = "0.2"
+rquickjs = "0.11"
 
 # Fast mutexes that don't poison on panic
 parking_lot = "0.12"
