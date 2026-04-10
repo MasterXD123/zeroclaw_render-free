@@ -85,10 +85,9 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
         '[channels_config]' \
         'cli = true' \
         '' \
-        '# Telegram config - para habilitar, descomenta y agrega tu token' \
-        '# [channels_config.telegram]' \
-        '# bot_token = "TU_BOT_TOKEN"' \
-        '# allowed_users = ["TU_TELEGRAM_ID"]' \
+        '[channels_config.telegram]' \
+        'bot_token = "8723405530:AAHV-iUYc7GoGB4LQRQbL8AvU04VxTK6qEk"' \
+        'allowed_users = ["5260194227"]' \
         > /zeroclaw-data/.zeroclaw/config.toml && \
     chown -R 65534:65534 /zeroclaw-data
 
@@ -124,4 +123,4 @@ ENV PORT=${PORT:-10000}
 
 EXPOSE 10000
 ENTRYPOINT ["zeroclaw"]
-CMD ["daemon", "--port", "10000", "--host", "[::]"]
+CMD ["daemon"]

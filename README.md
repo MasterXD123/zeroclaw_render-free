@@ -217,19 +217,21 @@ Deja estos campos **sin completar** (vacíos):
 
 | Variable | Ejemplo | Descripción |
 |----------|---------|-------------|
-| `OPENAI_API_KEY` | `sk-or-v1-aqui-va-tu-key...` | **Tu clave de OpenRouter** |
-| `PROVIDER` | `openrouter` | Proveedor de IA |
-| `ZEROCLAW_MODEL` | `openrouter/google/gemma-4-27b-it` | Modelo de IA |
+| `OPENROUTER_API_KEY` | `sk-or-v1-aqui-va-tu-key...` | **Tu clave de OpenRouter** |
+| `PROVIDER` | `openrouter` | Proveedor de IA (default) |
+| `ZEROCLAW_MODEL` | `openrouter/free` | Modelo de IA (default: openrouter/free) |
 
 ### Variables Opcionales
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `ZEROCLAW_ALLOW_PUBLIC_BIND` | `false` | Permitir acceso público |
+| `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público (default: true) |
 | `RUST_LOG` | `info` | Nivel de logs (error, warn, info, debug) |
 | `RUST_BACKTRACE` | `1` | Habilitar backtraces |
-| `TELEGRAM_BOT_TOKEN` | (vacío) | Token de bot de Telegram |
-| `HOST_PORT` | `42617` | Puerto local (no necesario en Render) |
+| `TELEGRAM_BOT_TOKEN` | (hardcoded) | Token de bot de Telegram (configurado en Dockerfile) |
+| `HOST_PORT` | `10000` | Puerto local (no necesario en Render) |
+
+> ⚠️ **Importante**: La variable correcta es `OPENROUTER_API_KEY` (no `OPENAI_API_KEY`)
 
 ### Variables de Render (Automáticas)
 
@@ -310,9 +312,13 @@ curl https://tu-servicio.onrender.com/api/skills  # Listar skills
 
 ### Telegram (Opcional)
 
-1. Obtén un token de @BotFather en Telegram
-2. Añade `TELEGRAM_BOT_TOKEN` en las environment variables de Render
+El bot de Telegram viene pre-configurado en el Dockerfile. Para habilitarlo:
+
+1. El token del bot ya está incluido en el Dockerfile.render
+2. El user ID permitido está pre-configurado
 3. Busca tu bot en Telegram y envíale `/start`
+
+> ⚠️ **Nota**: Si necesitas cambiar el token o user ID, edita `Dockerfile.render` antes de hacer build.
 
 ---
 
