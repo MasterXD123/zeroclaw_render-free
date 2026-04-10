@@ -260,11 +260,11 @@ curl -X POST https://tu-servicio.onrender.com/api/message \
 2. Envía mensajes al agente
 3. El agente ejecutará acciones y responderá
 
-### Telegram (Opcional)
+### Terminal Web
 
-1. Obtén un token de @BotFather en Telegram
-2. Añade `TELEGRAM_BOT_TOKEN` en las environment variables de Render
-3. Busca tu bot en Telegram y envíale `/start`
+1. Accede a `https://tu-servicio.onrender.com/terminal`
+2. Ejecuta comandos shell directamente
+3. Ver output en tiempo real
 
 ### API REST
 
@@ -272,11 +272,82 @@ curl -X POST https://tu-servicio.onrender.com/api/message \
 # Health check
 curl https://tu-servicio.onrender.com/health
 
-# Chat
-curl -X POST https://tu-servicio.onrender.com/api/message \
+# Chat con el agente
+curl -X POST https://tu-servicio.onrender.com/webhook \
   -H "Content-Type: application/json" \
-  -d '{"message": "your message here"}'
+  -d '{"message": "tu mensaje aquí"}'
+
+# Ejecutar comandos (terminal)
+curl -X POST https://tu-servicio.onrender.com/api/execute \
+  -H "Content-Type: application/json" \
+  -d '{"command": "ls -la"}'
+
+# Gestionar skills
+curl https://tu-servicio.onrender.com/api/skills  # Listar skills
 ```
+
+### Telegram (Opcional)
+
+1. Obtén un token de @BotFather en Telegram
+2. Añade `TELEGRAM_BOT_TOKEN` en las environment variables de Render
+3. Busca tu bot en Telegram y envíale `/start`
+
+---
+
+## Gestión de Skills (Plugins)
+
+### ¿Qué son las Skills?
+
+Las skills son "plugins" que extendienden las capacidades de ZeroClaw. Puedes crear, instalar y gestionar skills desde la API.
+
+### listar Skills
+
+```bash
+curl https://tu-servicio.onrender.com/api/skills
+```
+
+### Crear una Skill (API)
+
+```bash
+curl -X POST https://tu-servicio.onrender.com/api/skills \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "mi-skill",
+    "toml_content": "[skill]\nname = \"mi-skill\"\nversion = \"1.0.0\"\ndescription = \"Mi skill personalizada\"",
+    "md_content": "# Mi Skill\n\nDescripción de la skill."
+  }'
+```
+
+### Estructura de una Skill
+
+```
+skills/
+├── mi-skill/
+│   ├── SKILL.toml    # Metadatos y herramientas
+│   └── SKILL.md      # Descripción y comportamiento
+```
+
+### Skills Incluidas
+
+| Skill | Descripción |
+|-------|-------------|
+| `onboarding` | Guía de configuración inicial del usuario |
+| `skill-creator` | Crea nuevas skills desde conversación |
+| `skill-adapter` | Adapta skills de otras plataformas |
+| `features` | Lista todas las capacidades del sistema |
+| `setup-assistant` | Conectar APIs (Telegram, GitHub, etc.) |
+
+---
+
+## Configuración de Usuario
+
+ZeroClaw incluye un sistema de configuración de usuario. Al decir "configuración" el agente te guiará para:
+
+1. **Nombre**: "llámame [tu nombre]"
+2. **Permisos**: básico / medio / total
+3. **Estilo**: formal / casual
+
+Estos datos se guardan en memoria SQLite.
 
 ---
 
@@ -489,6 +560,18 @@ Ver [RENDER_DIFF.md](./RENDER_DIFF.md) para lista completa.
 ---
 
 ## Changelog
+
+### v1.1.0 (2026-04-10)
+- Add `/api/skills` endpoints (GET, POST, DELETE) for native skill management
+- Add user configuration system: USER.md, AGENTS.md, IDENTITY.md for self-awareness
+- Add `skill-creator` skill: Create skills from chat conversation
+- Add `skill-adapter` skill: Adapt skills from other platforms (OpenAI, LangChain, n8n)
+- Add Terminal web interface (`/terminal`)
+- Add `/api/execute` endpoint for shell command execution
+- Add `/health` endpoint for Render health check
+- Update onboarding with complete user setup flow
+- Fix Dockerfile to copy workspace files and allow API skill creation
+- Update RENDER_DEPLOY_GUIDE.md with correct env vars and commands
 
 ### v1.0.0 (2024)
 - Initial release for Render deployment
