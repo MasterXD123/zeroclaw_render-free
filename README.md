@@ -143,7 +143,7 @@ docker build -t zeroclaw -f Dockerfile.render .
 En el campo **Start Command**:
 
 ```bash
-docker run -p $PORT:$PORT -e OPENAI_API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND zeroclaw
+docker run -p $PORT:$PORT -e OPENAI_API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND -e RUST_LOG zeroclaw
 ```
 
 ### Paso 6: Añadir Environment Variables
@@ -154,9 +154,16 @@ En la sección **Environment Variables**, añade:
 |-----|-------|-------------|
 | `OPENAI_API_KEY` | `sk-or-v1-xxxxxxxxxxxxx` | **TU API KEY DE OPENROUTER** |
 | `PROVIDER` | `openrouter` | Proveedor de modelos |
-| `ZEROCLAW_MODEL` | `openrouter/google/gemma-4-27b-it` | Modelo a usar |
+| `ZEROCLAW_MODEL` | `openrouter/free` | Modelo a usar |
 | `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público |
 | `RUST_LOG` | `info` | Nivel de logs |
+| `NOTION_KEY` | Tu token de Notion | (opcional) |
+| `GITHUB_TOKEN` | Tu token de GitHub | (opcional) |
+
+**Notas:**
+- El token de Telegram se configura internamente en el Dockerfile (no como variable)
+- Las API keys de servicios adicionales se configuran en Environment Variables de Render
+- El modelo `openrouter/free` es el gratuito de OpenRouter
 
 **⚠️ IMPORTANTE**: Reemplaza `sk-or-v1-xxxxxxxxxxxxx` con tu API key real de OpenRouter.
 
