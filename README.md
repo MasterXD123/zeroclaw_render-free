@@ -160,7 +160,21 @@ En la sección **Environment Variables**, añade:
 
 **⚠️ IMPORTANTE**: Reemplaza `sk-or-v1-xxxxxxxxxxxxx` con tu API key real de OpenRouter.
 
-### Paso 7: Desplegar
+### Paso 7: Configurar Health Check (IMPORTANTE)
+
+En la sección **Advanced** del formulario, busca el campo **Health Check Path** y escribe:
+```
+/health
+```
+
+### Paso 8: Campos a dejar vacíos
+
+Deja estos campos **sin completar** (vacíos):
+- **Docker Command** (el Dockerfile ya tiene CMD)
+- **Dockerfile Path** (Render asume `./Dockerfile.render`)
+- **Docker Build Context Directory** (Render asume `.`)
+
+### Paso 9: Desplegar
 
 1. Click **"Create Web Service"**
 2. Espera a que termine el build (~10-15 minutos la primera vez)

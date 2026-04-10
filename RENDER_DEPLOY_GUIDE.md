@@ -151,6 +151,22 @@ En la sección **Environment Variables**, añade estas variables:
 
 **⚠️ IMPORTANTE**: En `OPENAI_API_KEY` debes poner tu key real de OpenRouter (la que empieza con `sk-or-v1-...`)
 
+### Paso 6b: Configurar Health Check (IMPORTANTE)
+
+En la sección **Advanced** del formulario, busca el campo **Health Check Path** y escribe:
+```
+/health
+```
+
+Esto permite que Render verifique que tu servicio está funcionando correctamente.
+
+### Paso 6c: Campos a dejar vacíos
+
+Estos campos déjalos vacíos (no los llenes):
+- **Docker Command** (el Dockerfile ya tiene CMD configurado)
+- **Dockerfile Path** (Render asume `./Dockerfile.render` por defecto)
+- **Docker Build Context Directory** (Render asume `.` por defecto)
+
 ### Paso 7: Desplegar
 
 1. Click **"Create Web Service"**
