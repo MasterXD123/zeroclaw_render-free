@@ -101,4 +101,4 @@ ENV PORT=10000
 
 EXPOSE 10000
 ENTRYPOINT ["zeroclaw"]
-CMD ["gateway", "start", "--port", "10000", "--host", "[::]"]
+CMD ["daemon", "--port", "10000", "--host", "[::]"]
