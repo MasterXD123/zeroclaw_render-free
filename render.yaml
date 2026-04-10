@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: zeroclaw
+    env: docker
+    region: frankfurt
+    plan: free
+    
+    # Build configuration
+    buildCommand: docker build -t zeroclaw -f Dockerfile.render .
+    startCommand: docker run -p $PORT:$PORT -e API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND=true zeroclaw
+    
+    # Environment variables (set in Render Dashboard)
+    envVars:
+      - key: PROVIDER
+        value: openrouter
+      - key: ZEROCLAW_MODEL
+        value: openrouter/google/gemma-4-27b-it
+      - key: ZEROCLAW_ALLOW_PUBLIC_BIND
+        value: "true"
+    
+    # Health check
+    healthCheck:
+      path: /health
+      port: $PORT
+      interval: 30
+      timeout: 10
+      restartThreshold: 3
+    
+    # Disk for persistence (requires paid plan)
+    # disk:
+    #   name: zeroclaw-data
+    #   mountPath: /zeroclaw-data
+    #   sizeGB: 1
+
+# Note: Free tier doesn't support persistent disks
+# Data will be lost on each deploy

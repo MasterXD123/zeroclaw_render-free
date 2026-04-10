@@ -6,49 +6,61 @@ author = "zeroclaw"
 tags = ["auto-healing", "self-repair", "health"]
 
 [[tools]]
+name = "health_check"
+description = "Comprehensive health check of all services"
+kind = "shell"
+command = "curl -s http://localhost:${PORT:-42617}/health || echo 'FAILED'"
+
+[[tools]]
 name = "check_gateway"
 description = "Check gateway health"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise curl -s http://localhost:42617/health"
+command = "curl -s -o /dev/null -w '%{http_code}' http://localhost:${PORT:-42617}/health"
 
 [[tools]]
-name = "check_qdrant"
-description = "Check qdrant health"
+name = "system_resources"
+description = "Check system resource usage"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise curl -s http://localhost:6333/collections"
+command = "echo '=== CPU ===' && top -bn1 | head -5 && echo '=== Memory ===' && free -m && echo '=== Disk ===' && df -h"
 
 [[tools]]
-name = "docker_stats"
-description = "Docker container stats"
+name = "process_status"
+description = "Check zeroclaw process status"
 kind = "shell"
-command = "docker stats --no-stream"
+command = "ps aux | grep -v grep | grep zeroclaw || echo 'ZEROCLAW NOT RUNNING'"
 
 [[tools]]
-name = "docker_restart"
-description = "Restart zeroclaw container"
+name = "container_health"
+description = "Check container health from /proc"
 kind = "shell"
-command = "docker restart zeroclaw-enterprise"
-
-[[tools]]
-name = "restart_qdrant"
-description = "Restart qdrant container"
-kind = "shell"
-command = "docker restart zeroclaw-qdrant"
-
-[[tools]]
-name = "get_logs"
-description = "Get zeroclaw logs"
-kind = "shell"
-command = "docker logs zeroclaw-enterprise --tail=30"
+command = "cat /proc/1/status | grep -E 'State|PPid|Name'"
 
 [[tools]]
 name = "disk_space"
 description = "Check disk space"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise df -h"
+command = "df -h"
 
 [[tools]]
 name = "memory_info"
 description = "Check memory usage"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise free -m"
+command = "free -m"
+
+[[tools]]
+name = "system_logs"
+description = "Get recent system logs"
+kind = "shell"
+command = "dmesg | tail -20 || journalctl -n 20 || echo 'Logs not available'"
+
+[[tools]]
+name = "auto_heal"
+description = "Attempt automatic healing (notify user)"
+kind = "shell"
+command = "echo 'Auto-heal triggered: Container will restart automatically on Render. For manual restart, use Render Dashboard or API.'"
+
+[[tools]]
+name = "diagnose"
+description = "Run full system diagnosis"
+kind = "shell"
+command = "echo '=== DIAGNOSIS ===' && echo 'Gateway:' && curl -s http://localhost:${PORT:-42617}/health && echo '' && echo 'Process:' && ps aux | grep -v grep | grep zeroclaw && echo '' && echo 'Memory:' && free -m && echo '' && echo 'Disk:' && df -h"

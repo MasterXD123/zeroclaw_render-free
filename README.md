@@ -1,911 +1,391 @@
-# ZeroClaw P_ZEROCLAW Fork
+# ZeroClaw-render-free
 
-> Enhanced autonomous AI agent runtime with self-healing, skills system, and Docker deployment
+> ZeroClaw fork optimizado para deployment en **Render free tier**
 
-**Repository:** https://github.com/MasterXD123/zeroclaw-free
-
----
-
-## Table of Contents
-
-1. [Introduction](#introduction)
-2. [Features](#features)
-3. [Prerequisites](#prerequisites)
-4. [Installation](#installation)
-5. [Configuration](#configuration)
-6. [Usage](#usage)
-7. [Skills System](#skills-system)
-8. [Docker Reference](#docker-reference)
-9. [Architecture](#architecture)
-10. [Security](#security)
-11. [Troubleshooting](#troubleshooting)
-12. [FAQ](#faq)
-13. [Project Status](#project-status)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/MasterXD123/zeroclaw_render-free)
 
 ---
 
-## Introduction
+## Tabla de Contenidos
 
-ZeroClaw is a Rust-based autonomous AI agent runtime. This fork adds:
-
-- **Self-Healer** - Automatic detection and repair of service issues
-- **Skills System** - Extensible capability system via `SKILL.md`/`SKILL.toml`
-- **Agentic-Bridge** - System prompt layer to enhance less-capable models
-- **Docker-Ready** - Optimized for local development and deployment
-
-### What is an AI Agent Runtime?
-
-An agent runtime is software that allows an AI model to:
-- Execute actions (not just respond to questions)
-- Use tools (shell commands, file operations, API calls)
-- Remember context across conversations
-- Run autonomously on a schedule (cron jobs)
-
-ZeroClaw provides the infrastructure; you provide the AI model via OpenRouter.
+1. [Qué es ZeroClaw-render-free](#qué-es-zeroclaw-render-free)
+2. [Requisitos Previos](#requisitos-previos)
+3. [Configuración de OpenRouter](#configuración-de-openrouter)
+4. [Deploy en Render - Paso a Paso](#deploy-en-render---paso-a-paso)
+5. [Configuración de Variables de Entorno](#configuración-de-variables-de-entorno)
+6. [Verificación del Deployment](#verificación-del-deployment)
+7. [Cómo Usar ZeroClaw](#cómo-usar-zeroclaw)
+8. [Solución de Problemas](#solución-de-problemas)
+9. [Costos](#costos)
+10. [Diferencias con el Fork Original](#diferencias-con-el-fork-original)
+11. [Recursos Adicionales](#recursos-adicionales)
 
 ---
 
-## Features
+## Qué es ZeroClaw-render-free
 
-| Feature | Status | Description |
+Este es un fork de [ZeroClaw-free](https://github.com/MasterXD123/zeroclaw-free) específicamente optimizado para deploy en **Render free tier**.
+
+### Características Principales
+
+| Feature | Estado | Descripción |
 |---------|--------|-------------|
-| Autonomous Agent Loop | ✅ | Rust-powered agent orchestration |
-| Skills System | ⚠️ Partial | Framework complete, some scripts pending |
-| Self-Healer | ⚠️ Partial | Health checks work, auto-repair pending |
-| Agentic-Bridge | ⚠️ Partial | Prompt enhancement layer |
-| Watchdog | ✅ Working | Health monitoring via docker exec |
-| Code-Guardian | ✅ Working | Configuration protection |
-| Telegram Integration | ✅ | Bot-based interaction |
-| Web Gateway | ✅ | Browser-based UI at port 42617 |
-| Cron Scheduler | ✅ | Periodic task execution |
-| Memory System | ✅ | SQLite-backed persistent memory |
+| Gateway HTTP | ✅ | Interfaz web en puerto dinámico |
+| SQLite Memory | ✅ | Memoria persistente por defecto |
+| Skills System | ✅ | Sistema extensible de habilidades |
+| Telegram Bot | ✅ | Bot de Telegram (opcional) |
+| Cron Jobs | ✅ | Tareas programadas |
+| Agent Loop | ✅ | Orquestación de agentes Rust |
+| Agentic-Bridge | ✅ | Mejora de prompts |
+
+### Diferencias vs Original
+
+- **Sin Qdrant**: Usa SQLite como backend de memoria
+- **Puerto dinámico**: Usa `$PORT` de Render en lugar de 42617
+- **Skills adaptadas**: Sin comandos `docker exec`
+- **Optimizado para Render**: Build y run commands específicos
+
+### Limitaciones (Render Free Tier)
+
+- ❌ Sin persistencia de datos entre redeploys
+- ❌ Container duerme después de 15 min inactividad
+- ❌ Sin acceso a Docker daemon interno
+
+Ver [RENDER_DIFF.md](./RENDER_DIFF.md) para detalles completos.
 
 ---
 
-## Prerequisites
+## Requisitos Previos
 
-### Required Software
+### Cuentas Necesarias
 
-| Software | Version | Install Guide |
-|----------|---------|--------------|
-| Docker | 20.10+ | [docs.docker.com/get-docker](https://docs.docker.com/get-docker/) |
-| Docker Compose | 2.0+ | Included with Docker Desktop |
-| Git | Any recent | [git-scm.com/downloads](https://git-scm.com/downloads) |
+| Servicio | Enlace | Costo |
+|----------|--------|-------|
+| GitHub | [github.com](https://github.com) | Gratis |
+| Render | [render.com](https://render.com) | Gratis |
+| OpenRouter | [openrouter.ai](https://openrouter.ai) | $5 gratis/mes |
 
-### Required Accounts
-
-| Service | Required | Notes |
-|---------|----------|-------|
-| OpenRouter | Yes | Free tier available at [openrouter.ai](https://openrouter.ai/) |
-| Telegram Bot | No | Optional for bot-based interaction |
-
-### System Requirements
-
-- **OS:** Linux, macOS, or Windows with WSL2
-- **RAM:** 4GB minimum (8GB recommended)
-- **Disk:** 2GB free space
-- **Network:** Internet access for API calls
+### Conocimiento Básico
+- Uso básico de terminal/línea de comandos
+- Saber navegar GitHub y Render Dashboard
 
 ---
 
-## Installation
+## Configuración de OpenRouter
 
-### Step 1: Clone the Repository
+### Paso 1: Crear Cuenta
 
-```bash
-git clone https://github.com/MasterXD123/zeroclaw-free.git
-cd zeroclaw-free
-```
+1. Ve a [openrouter.ai](https://openrouter.ai)
+2. Click **Sign Up** → usa tu cuenta Google o GitHub
+3. Verifica tu email
 
-### Step 2: Get Your API Key
+### Paso 2: Obtener tu API Key
 
-1. Go to [openrouter.ai](https://openrouter.ai/)
-2. Sign up for a free account
-3. Navigate to **Keys** section
-4. Create a new API key
-5. Copy the key (starts with `sk-or-v1-`)
+1. En OpenRouter, navega a **Keys** en el menú lateral
+2. Click **Create New Key**
+3. Nombre: `zeroclaw-render`
+4. **Copia la key** (comienza con `sk-or-v1-xxxxxxxx`)
+5. ⚠️ **Importante**: La key solo se muestra una vez
 
-### Step 3: Configure Environment
+### Paso 3: Verificar Créditos
 
-Create your environment file:
+1. Ve a **Credits** en el menú
+2. Deberías tener $5 gratis mensuales
+3. Los créditos se renuevan automáticamente
 
-```bash
-# On Linux/macOS/WSL2
-cp .env.example .env
+### Modelos Recomendados
 
-# On Windows (PowerShell)
-copy .env.example .env
-```
-
-Edit `.env` with your text editor:
-
-```bash
-# REQUIRED: Your OpenRouter API key
-OPENAI_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Model selection
-# Recommended models for agentic behavior:
-#   - openrouter/google/gemma-4-27b-it (best for instructions)
-#   - openrouter/anthropic/claude-3-haiku (fast, capable)
-#   - openrouter/mistral/mistral-7b-instruct (balanced)
-ZEROCLAW_MODEL=openrouter/google/gemma-4-27b-it
-
-# Security: keep false to restrict to localhost
-ZEROCLAW_ALLOW_PUBLIC_BIND=false
-
-# Gateway port
-HOST_PORT=42617
-
-# Optional: Telegram bot token (see Telegram Setup section)
-# TELEGRAM_BOT_TOKEN=
-```
-
-### Step 4: Start Services
-
-Build and start the Docker containers:
-
-```bash
-docker compose up -d
-```
-
-This will:
-1. Build the ZeroClaw Docker image
-2. Start the zeroclaw-enterprise container
-3. Start dependent services (if any)
-
-### Step 5: Verify Installation
-
-Check the container status:
-
-```bash
-docker compose ps
-```
-
-You should see:
-
-```
-NAME                STATUS          PORTS
-zeroclaw-enterprise running         0.0.0.0:42617->42617/tcp
-```
-
-View logs to confirm startup:
-
-```bash
-docker compose logs -f
-```
-
-Look for messages indicating successful startup, then press `Ctrl+C` to exit logs.
+| Modelo | Calidad | Velocidad | Costo |
+|--------|---------|-----------|-------|
+| `openrouter/google/gemma-4-27b-it` | ⭐⭐⭐⭐⭐ | Media | Bajo |
+| `openrouter/anthropic/claude-3-haiku` | ⭐⭐⭐⭐ | Rápida | Medio |
+| `openrouter/mistral/mistral-7b-instruct` | ⭐⭐⭐ | Rápida | Muy bajo |
 
 ---
 
-## Configuration
+## Deploy en Render - Paso a Paso
 
-### Environment Variables (.env)
+### Paso 1: Preparar el Repositorio
 
-The `.env` file is the primary configuration method. Each variable:
+Este repositorio ya está configurado para Render. Solo necesitas:
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `OPENAI_API_KEY` | **Yes** | - | Your OpenRouter API key |
-| `PROVIDER` | No | openrouter | Model provider |
-| `ZEROCLAW_MODEL` | No | gemma-4-27b-it | Model identifier |
-| `ZEROCLAW_ALLOW_PUBLIC_BIND` | No | false | Allow public gateway access |
-| `HOST_PORT` | No | 42617 | Host port for gateway |
-| `QDRANT_HOST` | No | qdrant | Vector database host |
-| `QDRANT_PORT` | No | 6333 | Vector database port |
-| `GITHUB_TOKEN` | No | - | GitHub API token |
-| `NOTION_KEY` | No | - | Notion integration key |
-| `TELEGRAM_BOT_TOKEN` | No | - | Telegram bot token |
-| `RUST_LOG` | No | info | Logging level (error, warn, info, debug) |
-| `RUST_BACKTRACE` | No | 1 | Enable backtraces (0 or 1) |
+1. Fork de este repositorio o clonar y subir a tu GitHub
+2. Conectar tu cuenta de GitHub con Render
 
-### Advanced Configuration (config.toml)
+### Paso 2: Crear Web Service en Render
 
-For advanced settings, create `config.toml` from the example:
+1. Ve a [render.com](https://render.com) e inicia sesión
+2. Click **"New"** → **"Web Service"**
+3. Busca y conecta tu repositorio `zeroclaw_render-free`
+4. Click **"Connect"**
+
+### Paso 3: Configurar el Servicio
+
+En la página de configuración:
+
+| Campo | Valor |
+|-------|-------|
+| **Name** | `zeroclaw` |
+| **Environment** | `Docker` |
+| **Region** | `Frankfurt` (o la más cercana) |
+| **Branch** | `master` |
+
+### Paso 4: Configurar Build Command
+
+En el campo **Build Command**:
 
 ```bash
-cp config.toml.example config.toml
+docker build -t zeroclaw -f Dockerfile.render .
 ```
 
-Key configuration sections:
+### Paso 5: Configurar Run Command
 
-#### Autonomy Level
+En el campo **Start Command**:
 
-Controls what the agent can do autonomously:
-
-```toml
-[autonomy]
-# Options:
-#   - "read_only": Agent can only read, no writes
-#   - "supervised": Agent asks for approval on risky actions
-#   - "full": Agent acts autonomously
-level = "supervised"
-workspace_only = true
+```bash
+docker run -p $PORT:$PORT -e OPENAI_API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND zeroclaw
 ```
 
-#### Gateway Settings
+### Paso 6: Añadir Environment Variables
 
-```toml
-[gateway]
-port = 42617
-host = "127.0.0.0"  # Change to "0.0.0.0" for public access
-require_pairing = true
-allow_public_bind = false
-```
+En la sección **Environment Variables**, añade:
 
-#### Security Settings
+| Key | Value | Descripción |
+|-----|-------|-------------|
+| `OPENAI_API_KEY` | `sk-or-v1-xxxxxxxxxxxxx` | **TU API KEY DE OPENROUTER** |
+| `PROVIDER` | `openrouter` | Proveedor de modelos |
+| `ZEROCLAW_MODEL` | `openrouter/google/gemma-4-27b-it` | Modelo a usar |
+| `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público |
+| `RUST_LOG` | `info` | Nivel de logs |
 
-```toml
-[security.sandbox]
-backend = "auto"
+**⚠️ IMPORTANTE**: Reemplaza `sk-or-v1-xxxxxxxxxxxxx` con tu API key real de OpenRouter.
 
-[security.resources]
-max_memory_mb = 512
-max_cpu_time_seconds = 60
-max_subprocesses = 10
+### Paso 7: Desplegar
 
-[security.otp]
-enabled = false
-method = "totp"
-```
-
-#### Allowed Commands
-
-```toml
-[autonomy]
-allowed_commands = [
-    "git", "npm", "cargo", "ls", "cat", "grep",
-    "find", "echo", "pwd", "curl", "wget"
-]
-```
-
-### SKILL.toml Per-Skill Configuration
-
-Each skill has its own `SKILL.toml` that defines its tools and behavior. See [Skills System](#skills-system) below.
+1. Click **"Create Web Service"**
+2. Espera a que termine el build (~10-15 minutos la primera vez)
+3. Verifica en los logs que no haya errores
 
 ---
 
-## Usage
+## Configuración de Variables de Entorno
 
-### Web Gateway (Browser)
+### Variables Obligatorias
 
-Access the gateway at: **http://localhost:42617**
+| Variable | Ejemplo | Descripción |
+|----------|---------|-------------|
+| `OPENAI_API_KEY` | `sk-or-v1-aqui-va-tu-key...` | **Tu clave de OpenRouter** |
+| `PROVIDER` | `openrouter` | Proveedor de IA |
+| `ZEROCLAW_MODEL` | `openrouter/google/gemma-4-27b-it` | Modelo de IA |
 
-Features:
-- Chat interface
-- Conversation history
-- Skill activation
-- Configuration panel
+### Variables Opcionales
 
-### Telegram Bot
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `ZEROCLAW_ALLOW_PUBLIC_BIND` | `false` | Permitir acceso público |
+| `RUST_LOG` | `info` | Nivel de logs (error, warn, info, debug) |
+| `RUST_BACKTRACE` | `1` | Habilitar backtraces |
+| `TELEGRAM_BOT_TOKEN` | (vacío) | Token de bot de Telegram |
+| `HOST_PORT` | `42617` | Puerto local (no necesario en Render) |
 
-If configured, interact with your bot on Telegram:
+### Variables de Render (Automáticas)
 
-1. Open Telegram and search for your bot
-2. Send `/start` to begin
-3. Send commands or questions
+| Variable | Descripción |
+|----------|-------------|
+| `PORT` | Puerto asignado por Render (ej: 10000) |
+| `RENDER_SERVICE_ID` | ID del servicio |
+| `RENDER_JOB_ID` | ID del job de build |
 
-Available commands:
-- `/start` - Start interaction
-- `/help` - Show help
-- `/status` - Show system status
-- `/skills` - List available skills
+---
 
-### API Access
+## Verificación del Deployment
 
-The gateway exposes a REST API:
+### Método 1: Health Endpoint
 
 ```bash
-# Health check
-curl http://localhost:42617/health
+curl https://tu-servicio.onrender.com/health
+```
 
-# Send message
-curl -X POST http://localhost:42617/api/message \
+Debería responder:
+```json
+{"status":"ok","version":"..."}
+```
+
+### Método 2: Interfaz Web
+
+1. Copia la URL de tu servicio (ej: `https://zeroclaw-abc123.onrender.com`)
+2. Ábrela en tu navegador
+3. Deberías ver la interfaz de ZeroClaw
+
+### Método 3: API
+
+```bash
+# Ver estado general
+curl https://tu-servicio.onrender.com/api/status
+
+# Enviar mensaje
+curl -X POST https://tu-servicio.onrender.com/api/message \
   -H "Content-Type: application/json" \
   -d '{"message": "hello"}'
 ```
 
 ---
 
-## Skills System
+## Cómo Usar ZeroClaw
 
-The skills system extends ZeroClaw with custom capabilities.
+### Interfaz Web
 
-### What is a Skill?
+1. Accede a `https://tu-servicio.onrender.com`
+2. Envía mensajes al agente
+3. El agente ejecutará acciones y responderá
 
-A skill is a package containing:
-- `SKILL.md` - Documentation and behavior definition
-- `SKILL.toml` - Tool definitions and configuration
-- Optional scripts/commands
+### Telegram (Opcional)
 
-### Included Skills
+1. Obtén un token de @BotFather en Telegram
+2. Añade `TELEGRAM_BOT_TOKEN` en las environment variables de Render
+3. Busca tu bot en Telegram y envíale `/start`
 
-#### ✅ Watchdog (Working)
-
-**Location:** `zeroclaw-data/workspace/skills/watchdog/`
-
-Health monitoring skill that checks service status.
-
-**Tools:**
-- `check_gateway` - Verify gateway is responding
-- `check_qdrant` - Verify vector database is running
-- `docker_stats` - Get container resource usage
-
-**Usage:**
-```
-@watchdog check gateway status
-```
-
-#### ✅ Code-Guardian (Working)
-
-**Location:** `zeroclaw-data/workspace/skills/code-guardian/`
-
-Protects configuration files from accidental corruption.
-
-**Tools:**
-- `validate_config_toml` - Validate config syntax
-- `backup_config` - Create config backup
-- `restore_config` - Restore from backup
-
-**Usage:**
-```
-@code-guardian validate my config
-```
-
-#### ⚠️ Self-Healer (Partial)
-
-**Location:** `zeroclaw-data/workspace/skills/self-healer/`
-
-Auto-repair system for critical issues.
-
-**Status:** SKILL.md and SKILL.toml exist; execution scripts pending.
-
-**Planned Tools:**
-- `health-check` - Comprehensive health diagnosis
-- `auto-repair` - Fix detected issues
-- `restart_service` - Restart failed containers
-
-**Usage (when implemented):**
-```
-@self-healer run health check
-```
-
-#### ⚠️ Agentic-Bridge (Partial)
-
-**Location:** `zeroclaw-data/workspace/skills/agentic-bridge/`
-
-Enhances less-capable models with better system prompts.
-
-**Status:** Basic structure exists; testing pending.
-
-**Purpose:** Improves model behavior for models that don't natively follow instructions well.
-
-#### ⚠️ Onboarding (Partial)
-
-**Location:** `zeroclaw-data/workspace/skills/onboarding/`
-
-First-time setup and configuration assistant.
-
-**Status:** Framework exists; execution logic pending.
-
-#### ⚠️ Features (Partial)
-
-**Location:** `zeroclaw-data/workspace/skills/features/`
-
-Lists available capabilities.
-
-**Status:** Basic structure only.
-
-#### ⚠️ Setup-Assistant (Partial)
-
-**Location:** `zeroclaw-data/workspace/skills/setup-assistant/`
-
-API configuration helper.
-
-**Status:** Basic structure; overlaps with onboarding.
-
-#### ⚠️ Auto-Connect (Partial)
-
-**Location:** `zeroclaw-data/workspace/skills/auto-connect/`
-
-Automatic service connection and discovery.
-
-**Status:** Basic structure; overlaps with setup-assistant.
-
-### Creating Custom Skills
-
-Create a new skill directory:
-
-```
-zeroclaw-data/workspace/skills/my-skill/
-├── SKILL.md      # Documentation
-└── SKILL.toml    # Tool definitions
-```
-
-Example `SKILL.toml`:
-
-```toml
-name = "my-skill"
-version = "1.0.0"
-description = "My custom skill"
-
-[[tools]]
-name = "my_tool"
-description = "What this tool does"
-kind = "shell"
-command = "echo 'Hello from my tool'"
-```
-
----
-
-## Docker Reference
-
-### Container Management
+### API REST
 
 ```bash
-# Start services
-docker compose up -d
+# Health check
+curl https://tu-servicio.onrender.com/health
 
-# Stop services
-docker compose down
-
-# Restart a container
-docker compose restart zeroclaw-enterprise
-
-# View logs
-docker compose logs -f zeroclaw-enterprise
-
-# Rebuild and start
-docker compose up -d --build
+# Chat
+curl -X POST https://tu-servicio.onrender.com/api/message \
+  -H "Content-Type: application/json" \
+  -d '{"message": "your message here"}'
 ```
 
-### Container Shell Access
+---
 
+## Solución de Problemas
+
+### Error: "Invalid API Key"
+
+**Causa**: Tu API key de OpenRouter es incorrecta o expiró
+
+**Solución**:
+1. Ve a [openrouter.ai/keys](https://openrouter.ai/keys)
+2. Crea una nueva key si es necesario
+3. Actualiza la variable `OPENAI_API_KEY` en Render
+
+### Error: "Model Not Found"
+
+**Causa**: El modelo especificado no existe
+
+**Solución**: Usa uno de los modelos recomendados:
 ```bash
-# Enter container shell
-docker exec -it zeroclaw-enterprise sh
-
-# Run a command inside container
-docker exec zeroclaw-enterprise zeroclaw status
+ZEROCLAW_MODEL=openrouter/anthropic/claude-3-haiku
 ```
 
-### Resource Monitoring
+### Error: "Port Already in Use"
 
-```bash
-# View container resource usage
-docker stats
+**Causa**: Render asignó un puerto ya en uso
 
-# View detailed container info
-docker inspect zeroclaw-enterprise
+**Solución**: El comando ya usa `$PORT`, contacta a soporte de Render
 
-# View container disk usage
-docker system df
-```
+### Servicio en Estado "Sleeping"
 
-### Cleanup
+**Causa**: Render free tier pone a dormir después de 15 min inactividad
 
-```bash
-# Remove stopped containers
-docker compose rm
+**Solución**: Envía una request y espera ~30 segundos, se despertará automáticamente
 
-# Remove all volumes (WARNING: deletes data)
-docker compose down -v
+### Build Fallido
 
-# Full cleanup (removes containers, volumes, images)
-docker compose down -v --rmi local
-```
+**Causa**: Error en el Dockerfile o dependencias
 
-### Volume Mounts
+**Solución**:
+1. Revisa los logs de build en Render Dashboard
+2. Verifica que el branch sea `master`
+3. Asegúrate que `Dockerfile.render` existe
 
-Data persists in these volumes:
+### Sin Respuesta del Gateway
 
-| Volume | Purpose |
-|--------|---------|
-| zeroclaw_zeroclaw-data | Skills, workspace, runtime data |
-| zeroclaw_zeroclaw-config | Configuration files |
+**Causa**: El servicio no inició correctamente
 
-### Ports
-
-| Port | Service |
-|------|---------|
-| 42617 | ZeroClaw Gateway (HTTP) |
+**Solución**:
+1. Revisa los logs de runtime
+2. Verifica que `OPENAI_API_KEY` esté configurada
+3. Revisa que el modelo sea válido
 
 ---
 
-## Architecture
+## Costos
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      ZeroClaw Runtime                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐         ┌──────────────┐                │
-│  │    Agent     │────────▶│    Tools      │                │
-│  │    Loop      │         │   Registry    │                │
-│  └──────────────┘         └──────────────┘                │
-│         │                         │                          │
-│         ▼                         ▼                          │
-│  ┌──────────────┐         ┌──────────────┐                │
-│  │   Provider    │         │    Skills     │                │
-│  │     (LLM)     │         │    System     │                │
-│  └──────────────┘         └──────────────┘                │
-│                                                               │
-│  ┌──────────────┐         ┌──────────────┐                │
-│  │    Cron      │         │   Channels    │                │
-│  │  Scheduler   │         │  Telegram/HTTP│                │
-│  └──────────────┘         └──────────────┘                │
-│                                                               │
-└─────────────────────────────────────────────────────────────┘
-```
+| Servicio | Costo | Notas |
+|----------|-------|-------|
+| **Render Free** | $0 | 750 horas/mes, duerme después de 15 min |
+| **OpenRouter** | $0-5/mes | $5 gratis mensuales, solo se cobra si superas |
+| **GitHub** | $0 | Gratis |
+| **TOTAL** | **~$0-5/mes** | |
 
-### Core Components
+### Consejos para Ahorrar
 
-| Component | Description |
-|-----------|-------------|
-| Agent Loop | Orchestrates message processing and tool execution |
-| Provider | Manages LLM API calls (OpenRouter) |
-| Tools Registry | Registers and executes available tools |
-| Skills System | Loads and manages skill definitions |
-| Cron Scheduler | Executes tasks on schedule |
-| Channels | Handles external interfaces (Telegram, web) |
-
-### Data Flow
-
-```
-User Message → Channel → Gateway → Agent Loop → Provider (LLM)
-                                                      │
-                                              ┌───────┴───────┐
-                                              │               │
-                                         Tool Execution   Response
-                                              │               │
-                                              ▼               ▼
-                                        Skills/Cron    User Output
-```
+1. Usa `claude-3-haiku` o `mistral-7b-instruct` (más económicos)
+2. Monitorea uso en [openrouter.ai/credits](https://openrouter.ai/credits)
+3. Configura alertas de uso en OpenRouter
 
 ---
 
-## Security
+## Diferencias con el Fork Original
 
-### Security Best Practices
+Este fork difiere del original [zeroclaw-free](https://github.com/MasterXD123/zeroclaw-free) en:
 
-1. **Never commit `.env`** - Contains API keys
-   - The file is in `.gitignore` by default
-   - Use `.env.example` as template
+| Aspecto | Original | Este Fork |
+|---------|----------|-----------|
+| Qdrant | ✅ Incluido | ❌ Eliminado |
+| Memoria | qdrant o sqlite | **sqlite** (default) |
+| Puerto | 42617 (hardcoded) | **$PORT** (dinámico) |
+| Skills | docker exec | **adaptadas** (sin docker) |
+| Dockerfile | Dockerfile | **Dockerfile.render** |
+| Documentación | General | **Render-optimizada** |
 
-2. **Restrict Gateway Access**
-   ```toml
-   [gateway]
-   allow_public_bind = false  # Keep restricted to localhost
-   ```
-
-3. **Use Supervised Autonomy**
-   ```toml
-   [autonomy]
-   level = "supervised"  # Agent asks before risky actions
-   ```
-
-4. **Limit Allowed Commands**
-   ```toml
-   [autonomy]
-   allowed_commands = ["git", "ls", "cat"]  # Minimal set
-   ```
-
-5. **Enable OTP for Critical Actions**
-   ```toml
-   [security.otp]
-   enabled = true
-   method = "totp"
-   ```
-
-### Files to Never Commit
-
-- `.env` - API keys and secrets
-- `config.toml` - Contains encrypted secrets
-- `zeroclaw-data/.zeroclaw/` - Runtime secrets
-- `*.key`, `*.pem` - SSL certificates
-- `credentials.json` - API credentials
-
-### Security Audit
-
-The codebase includes a security audit system that:
-- Blocks dangerous shell operators (`||`, `&&`, `;`)
-- Blocks script-like files (`.sh` files in skills)
-- Validates skill commands before execution
+Ver [RENDER_DIFF.md](./RENDER_DIFF.md) para lista completa.
 
 ---
 
-## Troubleshooting
+## Recursos Adicionales
 
-### Container Won't Start
+### Documentación
+- [RENDER_DEPLOY_GUIDE.md](./RENDER_DEPLOY_GUIDE.md) - Guía detallada de deployment
+- [RENDER_DIFF.md](./RENDER_DIFF.md) - Diferencias técnicas con el original
+- [CLAUDE.md](./CLAUDE.md) - Guía para desarrolladores
 
-**Symptom:** `docker compose up -d` fails
+### Enlaces Útiles
+- [Render Docs](https://render.com/docs) - Documentación oficial
+- [OpenRouter Docs](https://openrouter.ai/docs) - API de modelos
+- [ZeroClaw Original](https://github.com/zeroclaw-labs/zeroclaw) - Repositorio oficial
 
-**Solutions:**
-
-1. Check if port is already in use:
-   ```bash
-   netstat -an | grep 42617
-   # or on Windows
-   Get-NetTCPConnection -LocalPort 42617
-   ```
-
-2. Check Docker is running:
-   ```bash
-   docker version
-   ```
-
-3. View detailed logs:
-   ```bash
-   docker compose up  # Without -d to see output
-   ```
-
-### API Key Errors
-
-**Symptom:** `Unauthorized` or `Invalid API key`
-
-**Solutions:**
-
-1. Verify your API key in `.env`:
-   ```bash
-   grep OPENAI_API_KEY .env
-   ```
-
-2. Check OpenRouter key is valid:
-   - Go to [openrouter.ai/keys](https://openrouter.ai/keys)
-   - Verify key hasn't expired
-
-3. Check key has sufficient credits:
-   - OpenRouter free tier has limits
-
-### Gateway Not Accessible
-
-**Symptom:** `http://localhost:42617` shows connection refused
-
-**Solutions:**
-
-1. Verify container is running:
-   ```bash
-   docker compose ps
-   ```
-
-2. Check logs for startup errors:
-   ```bash
-   docker compose logs zeroclaw-enterprise
-   ```
-
-3. Verify port mapping:
-   ```bash
-   docker port zeroclaw-enterprise
-   ```
-
-### Model Not Responding
-
-**Symptom:** Gateway works but model doesn't respond
-
-**Solutions:**
-
-1. Check model name is correct:
-   ```bash
-   grep ZEROCLAW_MODEL .env
-   ```
-
-2. Verify model is available on OpenRouter:
-   - Check [openrouter.ai/models](https://openrouter.ai/models)
-
-3. Try a different model:
-   ```bash
-   # Edit .env
-   ZEROCLAW_MODEL=openrouter/anthropic/claude-3-haiku
-   # Restart
-   docker compose restart
-   ```
-
-### Telegram Bot Not Working
-
-**Symptom:** Bot doesn't respond to messages
-
-**Solutions:**
-
-1. Verify bot token:
-   ```bash
-   grep TELEGRAM_BOT_TOKEN .env
-   ```
-
-2. Test bot token:
-   ```bash
-   curl https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe
-   ```
-
-3. Check webhook status:
-   ```bash
-   curl https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo
-   ```
-
-4. Restart with new token if needed:
-   ```bash
-   docker compose restart
-   ```
-
-### High Memory Usage
-
-**Symptom:** Container using excessive memory
-
-**Solutions:**
-
-1. Check resource limits in `config.toml`:
-   ```toml
-   [security.resources]
-   max_memory_mb = 512
-   ```
-
-2. Reduce context window:
-   ```toml
-   [agent]
-   max_history_messages = 20  # Reduced from 50
-   ```
-
-3. Clean old logs:
-   ```bash
-   docker compose exec zeroclaw-enterprise truncate -s 0 /var/log/*.log
-   ```
-
-### Skills Not Loading
-
-**Symptom:** Skills exist but don't appear available
-
-**Solutions:**
-
-1. Check skill directory structure:
-   ```
-   zeroclaw-data/workspace/skills/
-   └── skill-name/
-       ├── SKILL.md
-       └── SKILL.toml
-   ```
-
-2. Validate SKILL.toml syntax:
-   ```bash
-   # Check for common errors in TOML
-   docker compose exec zeroclaw-enterprise zeroclaw skill validate
-   ```
-
-3. Check logs for skill errors:
-   ```bash
-   docker compose logs | grep -i skill
-   ```
+### Comunidad
+- ¿Encontraste un bug? [Abrir Issue](https://github.com/MasterXD123/zeroclaw_render-free/issues)
+- ¿Tienes preguntas? [Discussions](https://github.com/MasterXD123/zeroclaw_render-free/discussions)
 
 ---
 
-## FAQ
+## Changelog
 
-### Q: Do I need a powerful computer?
-
-**A:** No. ZeroClaw runs in Docker with minimal resource usage. A basic laptop or miniPC is sufficient. The actual AI model runs on OpenRouter's servers.
-
-### Q: How much does it cost to run?
-
-**A:** ZeroClaw itself is free. You pay for:
-- OpenRouter API calls (free tier: ~$5/month)
-- Your own compute for Docker (minimal)
-
-### Q: Can I use my own API key?
-
-**A:** Yes. ZeroClaw supports OpenRouter. Get a key at [openrouter.ai](https://openrouter.ai/).
-
-### Q: What models work best?
-
-**A:** Models tagged as "instruct" or "agentic" work best:
-- `google/gemma-4-27b-it` (recommended)
-- `anthropic/claude-3-haiku`
-- `mistral/mistral-7b-instruct`
-
-Avoid basic chat models that don't follow instructions well.
-
-### Q: Can I run without Docker?
-
-**A:** Yes, but requires Rust toolchain. See [DOCKER-BUILD.md](./DOCKER-BUILD.md) for native installation.
-
-### Q: How do I update ZeroClaw?
-
-**A:**
-
-```bash
-git pull origin master
-docker compose up -d --build
-```
-
-### Q: Where does data persist?
-
-**A:** In Docker volumes:
-- `zeroclaw_zeroclaw-data` - Skills, workspace, memory
-- `zeroclaw_zeroclaw-config` - Configuration
-
-### Q: Can I add custom tools?
-
-**A:** Yes. Create a skill with SKILL.md and SKILL.toml. See [Skills System](#skills-system).
-
-### Q: Why is my model responding poorly?
-
-**A:** Try these solutions:
-1. Use a better model (gemma-4-27b-it recommended)
-2. Enable Agentic-Bridge skill for prompt enhancement
-3. Adjust temperature in config.toml:
-   ```toml
-   default_temperature = 0.7
-   ```
-
-### Q: How do I reset everything?
-
-**A:**
-
-```bash
-# Stop and remove containers
-docker compose down
-
-# Remove volumes (deletes all data)
-docker compose down -v
-
-# Fresh start
-docker compose up -d
-```
+### v1.0.0 (2024)
+- Initial release for Render deployment
+- Qdrant removed, SQLite as default
+- Skills adapted for Render (no docker exec)
+- Dockerfile.render created
+- Complete deployment guide added
 
 ---
 
-## Project Status
+## Licencia
 
-### Implementation Status
-
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Core Agent Loop | ✅ Complete | Working |
-| Docker Deployment | ✅ Complete | Working |
-| Skills Framework | ⚠️ Partial | Some skills need scripts |
-| Self-Healer | ⚠️ Partial | 30% implementation |
-| Agentic-Bridge | ⚠️ Partial | 20% implementation |
-| Onboarding | ⚠️ Partial | 30% implementation |
-| Watchdog | ✅ Complete | Working |
-| Code-Guardian | ✅ Complete | Working |
-
-### Known Issues
-
-1. ⚠️ Skills are framework-only, some lack execution scripts
-2. ⚠️ Self-healer auto-repair not yet implemented
-3. ⚠️ Agentic-bridge needs testing with production models
-4. ⚠️ Some skills overlap in functionality
-
-### TODO
-
-- [ ] Implement health-master.sh for self-healer
-- [ ] Test agentic-bridge with Gemma 4
-- [ ] Complete onboarding skill flow
-- [ ] Add auto-tuner script
-- [ ] Add predictive monitor script
-- [ ] Create comprehensive API documentation
+MIT o Apache 2.0 (mismo que upstream ZeroClaw)
 
 ---
 
-## License
+## Notas
 
-MIT or Apache 2.0 (same as upstream ZeroClaw)
+⚠️ **Advertencia**: El tier gratuito de Render no garantiza persistencia de datos. Cada redeploy borrará la memoria y configuraciones. Para persistencia, considera actualizar a un plan de pago o usar una base de datos externa.
 
----
-
-## Contributing
-
-Contributions welcome! Please:
-
-1. Read the existing codebase structure
-2. Follow Rust coding conventions
-3. Test changes before submitting
-4. Update documentation for any new features
+⚠️ **Seguridad**: Nunca expongas tu API key en código público. Las variables de entorno en Render son seguras, pero no hagas commit de keys en tu código.
 
 ---
 
-## Support
-
-- **Issues:** https://github.com/MasterXD123/zeroclaw-free/issues
-- **Discussion:** Open an issue for questions
-
----
-
-*Based on [ZeroClaw](https://github.com/zeroclaw-labs/zeroclaw) by zeroclaw-labs*
+*Hecho con ❤️ para la comunidad de ZeroClaw*

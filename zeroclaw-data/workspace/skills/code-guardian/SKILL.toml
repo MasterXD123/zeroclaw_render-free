@@ -6,25 +6,31 @@ author = "zeroclaw"
 tags = ["protection", "validation", "safety"]
 
 [[tools]]
-name = "check_health"
-description = "Check zeroclaw health"
+name = "check_gateway"
+description = "Check zeroclaw gateway health"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise curl -s http://localhost:42617/health"
+command = "curl -s http://localhost:${PORT:-42617}/health"
 
 [[tools]]
-name = "check_qdrant"
-description = "Check qdrant health"
+name = "validate_config"
+description = "Validate config.toml syntax"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise curl -s http://localhost:6333/collections"
+command = "python3 -c 'import tomllib; tomllib.load(open(\"/zeroclaw-data/.zeroclaw/config.toml\", \"rb\"))' && echo 'Config OK' || echo 'Config INVALID'"
 
 [[tools]]
-name = "docker_ps"
-description = "List containers"
+name = "check_memory_backend"
+description = "Check memory backend status"
 kind = "shell"
-command = "docker ps -a"
+command = "ls -la /zeroclaw-data/.zeroclaw/ | grep -E 'memory|brain|sqlite' || echo 'No memory DB found'"
 
 [[tools]]
-name = "docker_validate"
-description = "Validate compose config"
+name = "backup_config"
+description = "Create config backup"
 kind = "shell"
-command = "docker exec zeroclaw-enterprise docker compose config"
+command = "cp /zeroclaw-data/.zeroclaw/config.toml /zeroclaw-data/.zeroclaw/config.toml.bak.$(date +%Y%m%d%H%M%S) && echo 'Backup created'"
+
+[[tools]]
+name = "restore_config"
+description = "Restore config from backup"
+kind = "shell"
+command = "ls -t /zeroclaw-data/.zeroclaw/config.toml.bak* | head -1 | xargs -I {} cp {} /zeroclaw-data/.zeroclaw/config.toml && echo 'Restored'"

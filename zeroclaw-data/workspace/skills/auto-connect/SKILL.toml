@@ -12,13 +12,19 @@ kind = "shell"
 command = "curl -s https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getMe"
 
 [[tools]]
-name = "test_qdrant"
-description = "Test qdrant"
+name = "test_gateway"
+description = "Test zeroclaw gateway"
 kind = "shell"
-command = "curl -s http://localhost:6333/collections"
+command = "curl -s http://localhost:${PORT:-42617}/health"
 
 [[tools]]
-name = "restart_zero"
-description = "Restart zeroclaw"
+name = "test_api_key"
+description = "Test OpenRouter API key"
 kind = "shell"
-command = "docker restart zeroclaw-enterprise"
+command = "curl -s -H 'Authorization: Bearer $OPENAI_API_KEY' https://openrouter.ai/api/v1/models"
+
+[[tools]]
+name = "test_internet"
+description = "Test internet connectivity"
+kind = "shell"
+command = "curl -s -o /dev/null -w '%{http_code}' https://openrouter.ai"
