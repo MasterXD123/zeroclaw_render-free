@@ -259,6 +259,110 @@ curl -X POST https://tu-servicio.onrender.com/api/message \
 
 ---
 
+## Mantener el Servicio Activo (Evitar que Duerma)
+
+Render free tier pone a dormir el servicio después de 15 minutos de inactividad. Para evitar esto, tienes varias opciones:
+
+### Opción 1: Google Apps Script (Recomendado - Gratis)
+
+Esta es la opción gratuita más recomendada. Usa Google Apps Script para hacer ping automático cada 10 minutos.
+
+#### Instrucciones:
+
+1. Ve a [script.google.com](https://script.google.com)
+2. Click **"Nuevo proyecto"**
+3. Copia el código del archivo [`apps-script-keep-alive.js`](./apps-script-keep-alive.js)
+4. En el código, cambia la línea:
+   ```javascript
+   var baseUrl = "https://TU-SERVICIO.onrender.com";
+   ```
+   Reemplaza `TU-SERVICIO.onrender.com` por tu URL real de Render
+
+5. Click **"Implementar"** → **"Nuevo despliegue"**
+6. Selecciona **"Ejecutable como yo"**
+7. Click **"Desplegar"**
+
+#### Configurar Trigger:
+
+1. En el editor de Apps Script, click el ícono de **Reloj** (Trigger)
+2. Click **"Agregar activador"**
+3. Configura:
+   - **Función a ejecutar**: `mantenerRenderActivo` o `simplePing`
+   - **Despliegue**: Primer despliegue
+   - **Tipo de activador**: **Basado en tiempo**
+   - **Frecuencia**: Cada 10 minutos o cada 5 minutos
+4. Click **"Guardar"**
+
+#### Código del Script:
+
+```javascript
+/**
+ * ZeroClaw Render Wake-Up Script
+ * Mantiene tu servicio de Render activo
+ */
+
+function mantenerRenderActivo() {
+  var baseUrl = "https://TU-SERVICIO.onrender.com";
+  
+  var endpoints = ["/", "/health", "/healthz"];
+  var opciones = {
+    method: "get",
+    muteHttpExceptions: true,
+    headers: { "User-Agent": "Mozilla/5.0" }
+  };
+
+  for (var i = 0; i < 3; i++) {
+    var endpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
+    var url = baseUrl + endpoint;
+    
+    var inicio = new Date().getTime();
+    var response = UrlFetchApp.fetch(url, opciones);
+    var tiempo = new Date().getTime() - inicio;
+
+    Logger.log("Ping " + (i+1) + " - Status: " + response.getResponseCode() + " - Tiempo: " + tiempo + "ms");
+
+    if (tiempo > 5000) {
+      UrlFetchApp.fetch(baseUrl + "/", opciones);
+    }
+    
+    if (i < 2) Utilities.sleep(120000);
+  }
+}
+```
+
+El archivo completo está en: [`apps-script-keep-alive.js`](./apps-script-keep-alive.js)
+
+### Opción 2: Cron-job.org (Gratis)
+
+1. Ve a [cron-job.org](https://cron-job.org)
+2. Crea una cuenta gratuita
+3. Click **"Create Cronjob"**
+4. Configura:
+   - **URL**: `https://tu-servicio.onrender.com/health`
+   - **Schedule**: Every 10 minutes
+5. Click **"Create"**
+
+### Opción 3: UptimeRobot (Gratis)
+
+1. Ve a [uptimerobot.com](https://uptimerobot.com)
+2. Crea cuenta gratuita
+3. Click **"Add New Monitor"**
+4. Configura:
+   - **Monitor Type**: HTTP(s)
+   - **URL**: `https://tu-servicio.onrender.com/health`
+   - **Interval**: 5 minutes
+5. Click **"Create Monitor"**
+
+### Comparación de Opciones
+
+| Método | Costo | Frecuencia | Facilidad |
+|--------|-------|------------|-----------|
+| Google Apps Script | Gratis | 1 min - 1 mes | ⭐⭐⭐⭐⭐ |
+| cron-job.org | Gratis | 15 min - 1 mes | ⭐⭐⭐⭐ |
+| UptimeRobot | Gratis | 5 - 60 min | ⭐⭐⭐⭐ |
+
+---
+
 ## Solución de Problemas
 
 ### Error: "Invalid API Key"
