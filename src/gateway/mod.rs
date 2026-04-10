@@ -306,6 +306,8 @@ pub struct AppState {
     pub observer: Arc<dyn crate::observability::Observer>,
     /// Registered tool specs (for web dashboard tools page)
     pub tools_registry: Arc<Vec<ToolSpec>>,
+    /// Shell tool for /api/execute endpoint
+    pub shell_tool: Arc<dyn crate::tools::Tool>,
     /// Cost tracker (optional, for web dashboard cost page)
     pub cost_tracker: Option<Arc<CostTracker>>,
     /// SSE broadcast channel for real-time events
@@ -380,10 +382,11 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
         (None, None)
     };
 
+    let runtime_for_tools = runtime.clone();
     let tools_registry_raw = tools::all_tools_with_runtime(
         Arc::new(config.clone()),
         &security,
-        runtime,
+        runtime_for_tools,
         Arc::clone(&mem),
         composio_key,
         composio_entity_id,
@@ -647,6 +650,17 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
         wati: wati_channel,
         observer: broadcast_observer,
         tools_registry,
+        shell_tool: tools_registry_raw
+            .into_iter()
+            .find(|t| t.name() == "shell")
+            .map(|t| Arc::from(t) as Arc<dyn crate::tools::Tool>)
+            .unwrap_or_else(|| {
+                tracing::warn!("ShellTool not found in tools registry, creating default");
+                Arc::new(crate::tools::ShellTool::new(
+                    security.clone(),
+                    runtime.clone(),
+                ))
+            }),
         cost_tracker,
         event_tx,
         shutdown_tx,
@@ -696,6 +710,10 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
         .route("/api/cost", get(api::handle_api_cost))
         .route("/api/cli-tools", get(api::handle_api_cli_tools))
         .route("/api/health", get(api::handle_api_health))
+        .route("/api/execute", post(api::handle_api_execute))
+        .route("/api/skills", get(api::handle_api_skills_list))
+        .route("/api/skills", post(api::handle_api_skill_create))
+        .route("/api/skills/{name}", delete(api::handle_api_skill_delete))
         // ── SSE event stream ──
         .route("/api/events", get(sse::handle_sse_events))
         // ── WebSocket agent chat ──

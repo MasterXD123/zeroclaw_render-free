@@ -1,0 +1,24 @@
+[skill]
+name = "skill-adapter"
+description = "Ayuda a adaptar skills de otras plataformas (OpenAI, LangChain, n8n, etc) al formato ZeroClaw."
+version = "1.0.0"
+author = "zeroclaw"
+tags = ["adapter", "skill", "migration", "tools"]
+
+[[tools]]
+name = "adapt_skill"
+description = "Recibe una skill de otra plataforma y la convierte al formato ZeroClaw"
+kind = "shell"
+command = "cat /zeroclaw-data/workspace/skills/skill-adapter/ADAPTATION_GUIDE.md"
+
+[[tools]]
+name = "show_formats"
+description = "Muestra los formatos de skills compatibles para adaptar"
+kind = "shell"
+command = "ls /zeroclaw-data/workspace/skills/skill-adapter/"
+
+[[tools]]
+name = "example_conversion"
+description = "Muestra un ejemplo de cómo adaptar de una plataforma específica"
+kind = "shell"
+command = "cat /zeroclaw-data/workspace/skills/skill-adapter/EXAMPLE.md"

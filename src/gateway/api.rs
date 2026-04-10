@@ -66,6 +66,45 @@ pub struct CronAddBody {
     pub command: String,
 }
 
+#[derive(Deserialize)]
+pub struct ExecuteBody {
+    pub command: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct ExecuteResponse {
+    pub status: String,
+    pub output: String,
+    pub error: Option<String>,
+}
+
+// ── Skill Management ───────────────────────────────────────────────
+
+#[derive(serde::Deserialize)]
+pub struct CreateSkillBody {
+    pub name: String,
+    pub description: Option<String>,
+    pub toml_content: String,
+    pub md_content: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct InstallSkillBody {
+    pub source: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct SkillResponse {
+    pub status: String,
+    pub message: String,
+    pub skill_name: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+pub struct SkillListResponse {
+    pub skills: Vec<serde_json::Value>,
+}
+
 // ── Handlers ────────────────────────────────────────────────────
 
 /// GET /api/status — system status overview
@@ -298,6 +337,55 @@ pub async fn handle_api_cron_delete(
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(serde_json::json!({"error": format!("Failed to remove cron job: {e}")})),
+        )
+            .into_response(),
+    }
+}
+
+/// POST /api/execute — execute a shell command immediately using ShellTool
+pub async fn handle_api_execute(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<ExecuteBody>,
+) -> impl IntoResponse {
+    if let Err(e) = require_auth(&state, &headers) {
+        return e.into_response();
+    }
+
+    // Execute command directly using ShellTool
+    let args = serde_json::json!({
+        "command": body.command,
+        "approved": true // Allow all commands through API
+    });
+
+    match state.shell_tool.execute(args).await {
+        Ok(result) => {
+            if result.success {
+                Json(ExecuteResponse {
+                    status: "ok".to_string(),
+                    output: result.output,
+                    error: result.error,
+                })
+                .into_response()
+            } else {
+                (
+                    StatusCode::BAD_REQUEST,
+                    Json(ExecuteResponse {
+                        status: "error".to_string(),
+                        output: result.output,
+                        error: result.error,
+                    }),
+                )
+                    .into_response()
+            }
+        }
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ExecuteResponse {
+                status: "error".to_string(),
+                output: String::new(),
+                error: Some(format!("Execution failed: {}", e)),
+            }),
         )
             .into_response(),
     }
@@ -551,6 +639,192 @@ pub async fn handle_api_health(
 
     let snapshot = crate::health::snapshot();
     Json(serde_json::json!({"health": snapshot})).into_response()
+}
+
+/// GET /api/skills — list all installed skills
+pub async fn handle_api_skills_list(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    if let Err(e) = require_auth(&state, &headers) {
+        return e.into_response();
+    }
+
+    let workspace_dir = state.config.lock().workspace_dir.clone();
+    let skills = crate::skills::load_skills(&workspace_dir);
+
+    let skills_json: Vec<serde_json::Value> = skills
+        .iter()
+        .map(|s| {
+            serde_json::json!({
+                "name": s.name,
+                "description": s.description,
+                "version": s.version,
+                "author": s.author,
+                "tags": s.tags,
+                "tools_count": s.tools.len(),
+            })
+        })
+        .collect();
+
+    Json(SkillListResponse {
+        skills: skills_json,
+    })
+    .into_response()
+}
+
+/// POST /api/skills — create a new skill with provided files
+pub async fn handle_api_skill_create(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(body): Json<CreateSkillBody>,
+) -> impl IntoResponse {
+    if let Err(e) = require_auth(&state, &headers) {
+        return e.into_response();
+    }
+
+    let workspace_dir = state.config.lock().workspace_dir.clone();
+    let skills_dir = workspace_dir.join("skills").join(&body.name);
+
+    // Validate name
+    if body.name.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: "Skill name cannot be empty".to_string(),
+                skill_name: None,
+            }),
+        )
+            .into_response();
+    }
+
+    // Check if skill already exists
+    if skills_dir.exists() {
+        return (
+            StatusCode::CONFLICT,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Skill '{}' already exists", body.name),
+                skill_name: Some(body.name),
+            }),
+        )
+            .into_response();
+    }
+
+    // Create skill directory
+    if let Err(e) = std::fs::create_dir_all(&skills_dir) {
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Failed to create skill directory: {}", e),
+                skill_name: None,
+            }),
+        )
+            .into_response();
+    }
+
+    // Write SKILL.toml
+    let toml_path = skills_dir.join("SKILL.toml");
+    if let Err(e) = std::fs::write(&toml_path, &body.toml_content) {
+        let _ = std::fs::remove_dir_all(&skills_dir);
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Failed to write SKILL.toml: {}", e),
+                skill_name: None,
+            }),
+        )
+            .into_response();
+    }
+
+    // Write SKILL.md
+    let md_path = skills_dir.join("SKILL.md");
+    if let Err(e) = std::fs::write(&md_path, &body.md_content) {
+        let _ = std::fs::remove_dir_all(&skills_dir);
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Failed to write SKILL.md: {}", e),
+                skill_name: None,
+            }),
+        )
+            .into_response();
+    }
+
+    Json(SkillResponse {
+        status: "ok".to_string(),
+        message: format!("Skill '{}' created successfully", body.name),
+        skill_name: Some(body.name),
+    })
+    .into_response()
+}
+
+/// DELETE /api/skills/{name} — delete an installed skill
+pub async fn handle_api_skill_delete(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Path(name): Path<String>,
+) -> impl IntoResponse {
+    if let Err(e) = require_auth(&state, &headers) {
+        return e.into_response();
+    }
+
+    let workspace_dir = state.config.lock().workspace_dir.clone();
+    let skill_dir = workspace_dir.join("skills").join(&name);
+
+    if !skill_dir.exists() {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Skill '{}' not found", name),
+                skill_name: Some(name),
+            }),
+        )
+            .into_response();
+    }
+
+    // Prevent deletion of protected skills
+    let protected = [
+        "onboarding",
+        "features",
+        "setup-assistant",
+        "skill-creator",
+        "skill-adapter",
+    ];
+    if protected.contains(&name.as_str()) {
+        return (
+            StatusCode::FORBIDDEN,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Cannot delete protected skill '{}'", name),
+                skill_name: Some(name),
+            }),
+        )
+            .into_response();
+    }
+
+    match std::fs::remove_dir_all(&skill_dir) {
+        Ok(_) => Json(SkillResponse {
+            status: "ok".to_string(),
+            message: format!("Skill '{}' deleted successfully", name),
+            skill_name: Some(name),
+        })
+        .into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(SkillResponse {
+                status: "error".to_string(),
+                message: format!("Failed to delete skill: {}", e),
+                skill_name: Some(name),
+            }),
+        )
+            .into_response(),
+    }
 }
 
 // ── Helpers ─────────────────────────────────────────────────────

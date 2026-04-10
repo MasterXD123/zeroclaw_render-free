@@ -134,8 +134,10 @@ docker build -t zeroclaw -f Dockerfile.render .
 
 En el campo **Start Command**, escribe:
 ```bash
-docker run -p $PORT:$PORT -e OPENAI_API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND zeroclaw
+zeroclaw daemon --port $PORT --host "[::]"
 ```
+
+> **Nota**: El Dockerfile ya tiene el comando configurado, solo necesita las variables de entorno.
 
 ### Paso 6: Añadir Environment Variables
 
@@ -143,13 +145,15 @@ En la sección **Environment Variables**, añade estas variables:
 
 | Key | Value | Description |
 |-----|-------|-------------|
-| `OPENAI_API_KEY` | `sk-or-v1-aqui-tu-key` | **TU API KEY DE OPENROUTER** |
+| `OPENROUTER_API_KEY` | `sk-or-v1-aqui-tu-key` | **TU API KEY DE OPENROUTER** |
 | `PROVIDER` | `openrouter` | Proveedor de modelos |
 | `ZEROCLAW_MODEL` | `openrouter/google/gemma-4-27b-it` | Modelo a usar |
 | `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público |
 | `RUST_LOG` | `info` | Nivel de logs |
 
-**⚠️ IMPORTANTE**: En `OPENAI_API_KEY` debes poner tu key real de OpenRouter (la que empieza con `sk-or-v1-...`)
+**⚠️ IMPORTANTE**: En `OPENROUTER_API_KEY` debes poner tu key real de OpenRouter (la que empieza con `sk-or-v1-...`)
+
+> **Nota**: El Telegram token ya está configurado en el Dockerfile. Si deseas usar Telegram, agrégalo también como variable `TELEGRAM_BOT_TOKEN`.
 
 ### Paso 6b: Configurar Health Check (IMPORTANTE)
 
@@ -179,13 +183,15 @@ Estos campos déjalos vacíos (no los llenes):
 
 | Variable | Ejemplo | Para qué sirve |
 |----------|---------|----------------|
-| `OPENAI_API_KEY` | `sk-or-v1-xxxx...` | **Tu clave de OpenRouter** - Obligatoria |
+| `OPENROUTER_API_KEY` | `sk-or-v1-xxxx...` | **Tu clave de OpenRouter** - Obligatoria |
 | `PROVIDER` | `openrouter` | Qué proveedor de IA usas |
 | `ZEROCLAW_MODEL` | `openrouter/google/gemma-4-27b-it` | Qué modelo de IA |
 | `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Si=true, accesible desde internet |
 | `PORT` | `10000` | Render lo asigna automáticamente |
 | `TELEGRAM_BOT_TOKEN` | (vacío o tu token) | Para usar Telegram (opcional) |
 | `RUST_LOG` | `info` | Cuánto detalle en logs |
+
+> **Nota**: Las variables de entorno se sobrescriben sobre la config del Dockerfile. La API key de OpenRouter se lee automáticamente de `OPENROUTER_API_KEY`.
 
 ---
 
@@ -296,9 +302,22 @@ Si quieres usar Telegram:
 3. ✅ Subir a GitHub
 4. ✅ En Render: New → Web Service → conectar repo
 5. ✅ Build: `docker build -t zeroclaw -f Dockerfile.render .`
-6. ✅ Run: `docker run -p $PORT:$PORT -e OPENAI_API_KEY -e PROVIDER -e ZEROCLAW_MODEL zeroclaw`
-7. ✅ Añadir `OPENAI_API_KEY=tu-key-real` en Environment Variables
+6. ✅ Start: `zeroclaw daemon --port $PORT --host "[::]"`
+7. ✅ Añadir `OPENROUTER_API_KEY=tu-key-real` en Environment Variables
 8. ✅ Click Create → esperar ~10 min → verificar con /health
+
+---
+
+## FUNCIONALIDADES INCLUIDAS
+
+| Funcionalidad | Estado | Notas |
+|---------------|--------|-------|
+| Terminal web | ✅ | `/terminal` - Ejecuta comandos shell |
+| API de comandos | ✅ | `/api/execute` - Ejecuta comandos via JSON |
+| Health check | ✅ | `/health` - Para Render health check |
+| Telegram bot | ⚠️ | Opcional - configurar `TELEGRAM_BOT_TOKEN` |
+| Memoria SQLite | ✅ | Persistente en el contenedor |
+| Autonomía completa | ✅ | 30+ comandos permitidos |
 
 ---
 

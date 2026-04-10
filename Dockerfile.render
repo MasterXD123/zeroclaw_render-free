@@ -1,7 +1,19 @@
 # syntax=docker/dockerfile:1.7
 
-# ── Stage 1: Build ────────────────────────────────────────────
-FROM rust:1.93-slim@sha256:9663b80a1621253d30b146454f903de48f0af925c967be48c84745537cd35d8b AS builder
+# ── Stage 1: Build Frontend (Node.js) ───────────────────────────
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/web
+
+# Copy web files
+COPY web/package.json web/package-lock.json* ./
+COPY web/ ./
+
+# Install dependencies and build
+RUN npm install && npm run build
+
+# ── Stage 2: Build Rust ───────────────────────────────────────
+FROM rust:1.93-slim AS builder
 
 WORKDIR /app
 
@@ -31,24 +43,9 @@ COPY src/ src/
 COPY benches/ benches/
 COPY crates/ crates/
 COPY firmware/ firmware/
-COPY web/ web/
 
-RUN mkdir -p web/dist && \
-    if [ ! -f web/dist/index.html ]; then \
-      printf '%s\n' \
-        '<!doctype html>' \
-        '<html lang="en">' \
-        '  <head>' \
-        '    <meta charset="utf-8" />' \
-        '    <meta name="viewport" content="width=device-width,initial-scale=1" />' \
-        '    <title>ZeroClaw Dashboard</title>' \
-        '  </head>' \
-        '  <body>' \
-        '    <h1>ZeroClaw Dashboard Unavailable</h1>' \
-        '    <p>Frontend assets are not bundled in this build.</p>' \
-        '  </body>' \
-        '</html>' > web/dist/index.html; \
-    fi
+# Copy built frontend from stage 1
+COPY --from=frontend-builder /app/web/dist ./web/dist
 
 RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=zeroclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
@@ -70,6 +67,16 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
         'allow_public_bind = true' \
         'require_pairing = false' \
         '' \
+        '[autonomy]' \
+        'level = "full"' \
+        'workspace_only = false' \
+        'block_high_risk_commands = false' \
+        'require_approval_for_medium_risk = false' \
+        'max_actions_per_hour = 100' \
+        'max_cost_per_day_cents = 10000' \
+        'allowed_commands = ["git", "npm", "node", "cargo", "python", "pip", "curl", "wget", "ls", "cat", "grep", "find", "echo", "pwd", "mkdir", "rm", "cp", "mv", "chmod", "tar", "unzip", "sed", "awk", "sort", "uniq", "diff", "wc", "head", "tail", "date", "ps", "kill", "whoami", "id", "env", "hostname", "uptime", "df", "free"]' \
+        'forbidden_paths = []' \
+        '' \
         '[memory]' \
         'backend = "sqlite"' \
         'auto_save = true' \
@@ -84,19 +91,33 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
         > /zeroclaw-data/.zeroclaw/config.toml && \
     chown -R 65534:65534 /zeroclaw-data
 
-# ── Stage 2: Production Runtime (Distroless) ─────────────────
-FROM gcr.io/distroless/cc-debian13:nonroot@sha256:84fcd3c223b144b0cb6edc5ecc75641819842a9679a3a58fd6294bec47532bf7 AS release
+# Copy workspace files (USER.md, AGENTS.md, IDENTITY.md, skills)
+COPY zeroclaw-data/workspace/ /zeroclaw-data/workspace/
+
+# Ensure skills directory is writable for API skill creation
+RUN chmod -R 777 /zeroclaw-data/workspace/skills
+
+# ── Stage 3: Production Runtime (Distroless) ─────────────────
+FROM gcr.io/distroless/cc-debian13:debug AS release
 
 COPY --from=builder /app/zeroclaw /usr/local/bin/zeroclaw
 COPY --from=builder /zeroclaw-data /zeroclaw-data
 
+# Copy shell from builder stage (Debian has sh)
+COPY --from=builder /bin/sh /bin/sh
+COPY --from=builder /usr/bin/env /usr/bin/env
+
 ENV ZEROCLAW_WORKSPACE=/zeroclaw-data/workspace
 ENV HOME=/zeroclaw-data
+
+# API Keys will be passed via environment variables (set in Render dashboard)
+# OPENROUTER_API_KEY - your OpenRouter API key (required)
+# TELEGRAM_BOT_TOKEN - Telegram bot token (optional)
 
 WORKDIR /zeroclaw-data
 USER 65534:65534
 
-# Usar variable PORT de entorno (Render la provee, o usar 10000 por defecto)
+# Usar variable PORT de entorno (Render la provee automáticamente)
 ENV PORT=10000
 
 EXPOSE 10000

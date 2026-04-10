@@ -1,0 +1,24 @@
+[skill]
+name = "skill-creator"
+description = "Crea nuevas skills para ZeroClaw directamente desde conversación. El usuario describe qué quiere y yo creo los archivos SKILL.toml y SKILL.md."
+version = "1.0.0"
+author = "zeroclaw"
+tags = ["creator", "skill", "generator", "tool-builder"]
+
+[[tools]]
+name = "create_skill_files"
+description = "Crea los archivos SKILL.toml y SKILL.md para una nueva skill"
+kind = "shell"
+command = "echo 'Usa file_write para crear los archivos de la skill'"
+
+[[tools]]
+name = "list_skills"
+description = "Lista las skills actuales del workspace"
+kind = "shell"
+command = "ls /zeroclaw-data/workspace/skills/"
+
+[[tools]]
+name = "check_skill_exists"
+description = "Verifica si ya existe una skill con ese nombre"
+kind = "shell"
+command = "ls /zeroclaw-data/workspace/skills/$SKILL_NAME/"
