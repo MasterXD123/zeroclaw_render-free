@@ -174,20 +174,24 @@ En la sección **Environment Variables**, añade:
 
 | Key | Value | Descripción |
 |-----|-------|-------------|
-| `OPENAI_API_KEY` | `sk-or-v1-xxxxxxxxxxxxx` | **TU API KEY DE OPENROUTER** |
+| `OPENROUTER_API_KEY` | `sk-or-v1-xxxxxxxxxxxxx` | **TU API KEY DE OPENROUTER** |
 | `PROVIDER` | `openrouter` | Proveedor de modelos |
 | `ZEROCLAW_MODEL` | `openrouter/free` | Modelo a usar |
 | `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público |
 | `RUST_LOG` | `info` | Nivel de logs |
-| `NOTION_KEY` | Tu token de Notion | (opcional) |
-| `GITHUB_TOKEN` | Tu token de GitHub | (opcional) |
+
+**Opcionales (agrega solo si los necesitas):**
+
+| Key | Value | Descripción |
+|-----|-------|-------------|
+| `TELEGRAM_BOT_TOKEN` | Tu token de Telegram | Habilitar bot de Telegram |
+| `TELEGRAM_ALLOWED_USERS` | Tu user ID de Telegram | Usuarios permitidos en Telegram |
+| `NOTION_KEY` | Tu token de Notion | Integración con Notion |
+| `GITHUB_TOKEN` | Tu token de GitHub | Integración con GitHub |
 
 **Notas:**
-- El token de Telegram se configura internamente en el Dockerfile (no como variable)
-- Las API keys de servicios adicionales se configuran en Environment Variables de Render
-- El modelo `openrouter/free` es el gratuito de OpenRouter
-
-**⚠️ IMPORTANTE**: Reemplaza `sk-or-v1-xxxxxxxxxxxxx` con tu API key real de OpenRouter.
+- La variable correcta es `OPENROUTER_API_KEY` (no `OPENAI_API_KEY`)
+- El modelo `openrouter/free` es gratuito
 
 ### Paso 7: Configurar Health Check (IMPORTANTE)
 
@@ -217,21 +221,26 @@ Deja estos campos **sin completar** (vacíos):
 
 | Variable | Ejemplo | Descripción |
 |----------|---------|-------------|
-| `OPENROUTER_API_KEY` | `sk-or-v1-aqui-va-tu-key...` | **Tu clave de OpenRouter** |
-| `PROVIDER` | `openrouter` | Proveedor de IA (default) |
-| `ZEROCLAW_MODEL` | `openrouter/free` | Modelo de IA (default: openrouter/free) |
+| `OPENROUTER_API_KEY` | `sk-or-v1-...` | **Tu clave de OpenRouter** (obligatoria) |
 
 ### Variables Opcionales
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público (default: true) |
+| `PROVIDER` | `openrouter` | Proveedor de IA |
+| `ZEROCLAW_MODEL` | `openrouter/free` | Modelo de IA |
+| `ZEROCLAW_ALLOW_PUBLIC_BIND` | `true` | Permitir acceso público |
 | `RUST_LOG` | `info` | Nivel de logs (error, warn, info, debug) |
 | `RUST_BACKTRACE` | `1` | Habilitar backtraces |
-| `TELEGRAM_BOT_TOKEN` | (hardcoded) | Token de bot de Telegram (configurado en Dockerfile) |
-| `HOST_PORT` | `10000` | Puerto local (no necesario en Render) |
 
-> ⚠️ **Importante**: La variable correcta es `OPENROUTER_API_KEY` (no `OPENAI_API_KEY`)
+### Variables de Canales (Opcionales)
+
+| Variable | Descripción |
+|----------|-------------|
+| `TELEGRAM_BOT_TOKEN` | Token de tu bot de Telegram (ej: `123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11`) |
+| `TELEGRAM_ALLOWED_USERS` | IDs de usuarios de Telegram separados por coma (o `*` para todos) |
+| `NOTION_KEY` | Token de API de Notion |
+| `GITHUB_TOKEN` | Token de GitHub |
 
 ### Variables de Render (Automáticas)
 
@@ -312,13 +321,16 @@ curl https://tu-servicio.onrender.com/api/skills  # Listar skills
 
 ### Telegram (Opcional)
 
-El bot de Telegram viene pre-configurado en el Dockerfile. Para habilitarlo:
+Para habilitar el bot de Telegram, configura estas variables en Render:
 
-1. El token del bot ya está incluido en el Dockerfile.render
-2. El user ID permitido está pre-configurado
-3. Busca tu bot en Telegram y envíale `/start`
+1. `TELEGRAM_BOT_TOKEN` - Token de tu bot (obtenlo de @BotFather)
+2. `TELEGRAM_ALLOWED_USERS` - Tu ID de Telegram (obtenlo de @userinfobot)
 
-> ⚠️ **Nota**: Si necesitas cambiar el token o user ID, edita `Dockerfile.render` antes de hacer build.
+Ejemplo de valores:
+- `TELEGRAM_BOT_TOKEN`: `1234567890:AAHV-iUYc7GoGB4LQRQbL8AvU04VxTK6qEk`
+- `TELEGRAM_ALLOWED_USERS`: `5260194227`
+
+Luego busca tu bot en Telegram y envíale `/start`.
 
 ---
 
