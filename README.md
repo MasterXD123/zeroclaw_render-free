@@ -55,6 +55,58 @@ Ver [RENDER_DIFF.md](./RENDER_DIFF.md) para detalles completos.
 
 ---
 
+## Quick Start (5 minutos)
+
+### 0. Obtener tus keys antes de empezar
+
+**OpenRouter (obligatorio):**
+1. Ve a [openrouter.ai](https://openrouter.ai)
+2. Crea cuenta y ve a **Keys** → **Create New Key**
+3. Copia la key (comienza con `sk-or-v1-`)
+
+**Telegram (opcional):**
+1. Habla con [@BotFather](https://t.me/BotFather) en Telegram
+2. Crea un nuevo bot con `/newbot`
+3. Copia el token (ej: `123456:ABC-DEF...`)
+4. Para obtener tu user ID, habla con [@userinfobot](https://t.me/userinfobot)
+
+**Notion (opcional):**
+1. Ve a [notion.so/my-integrations](https://notion.so/my-integrations)
+2. Crea una nueva integración
+3. Copia el **Internal Integration Token**
+
+### 1. Fork del repositorio
+Haz click en **"Fork"** en la esquina superior derecha de [este repositorio](https://github.com/MasterXD123/zeroclaw_render-free)
+
+### 2. Deploy en Render
+1. Ve a [render.com](https://render.com) e inicia sesión
+2. Click **New** → **Web Service**
+3. Conecta tu repositorio (el que acabas de hacer fork)
+4. Configura:
+   - **Name**: `zeroclaw`
+   - **Environment**: `Docker`
+   - **Build Command**: `docker build -t zeroclaw -f Dockerfile.render .`
+   - **Start Command**: `docker run -p $PORT:$PORT -e OPENROUTER_API_KEY zeroclaw`
+
+### 3. Configura las Environment Variables
+
+| Variable | Valor |
+|----------|-------|
+| `OPENROUTER_API_KEY` | Tu API key de OpenRouter |
+| `TELEGRAM_BOT_TOKEN` | (opcional) Token de tu bot |
+| `TELEGRAM_ALLOWED_USERS` | (opcional) Tu user ID de Telegram |
+| `NOTION_KEY` | (opcional) Token de Notion |
+| `GITHUB_TOKEN` | (opcional) Token de GitHub |
+
+### 4. Health Check
+En la sección **Advanced**, configura:
+- **Health Check Path**: `/health`
+
+### 5. Deploy
+Click **Create Web Service** y espera ~10-15 minutos.
+
+---
+
 ## Requisitos Previos
 
 ### Cuentas Necesarias
