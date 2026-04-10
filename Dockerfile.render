@@ -85,9 +85,10 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
         '[channels_config]' \
         'cli = true' \
         '' \
-        '[channels_config.telegram]' \
-        'bot_token = "INSERT_TELEGRAM_BOT_TOKEN_HERE"' \
-        'allowed_users = ["INSERT_YOUR_TELEGRAM_ID_HERE"]' \
+        '# Telegram config - para habilitar, descomenta y agrega tu token' \
+        '# [channels_config.telegram]' \
+        '# bot_token = "TU_BOT_TOKEN"' \
+        '# allowed_users = ["TU_TELEGRAM_ID"]' \
         > /zeroclaw-data/.zeroclaw/config.toml && \
     chown -R 65534:65534 /zeroclaw-data
 
