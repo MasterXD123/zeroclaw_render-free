@@ -130,9 +130,34 @@ PORT=10000               # Render asigna automáticamente
 - `.env.example` - Eliminadas variables QDRANT_*
 - `config.toml.example` - SQLite ya es default (sin cambios)
 - Skills - Adaptados para funcionar sin Docker daemon
-- `Dockerfile.render` - Nuevo, optimizado para Render
+- `Dockerfile.render` - Nuevo, optimizado para Render (con $PORT dinámico)
 - `README.md` - Actualizado con sección de Render
 - `RENDER_DEPLOY_GUIDE.md` - Nueva guía completa
+- `render.yaml` - Blueprint optimizado para deployment con un click
+
+### v1.1.0 (2026-04-10) - Nuevas Features
+
+**API de Skills:**
+- `GET /api/skills` - Listar skills instaladas
+- `POST /api/skills` - Crear nueva skill
+- `DELETE /api/skills/{name}` - Eliminar skill
+
+**Interfaz Terminal:**
+- `/terminal` - Terminal web para ejecutar comandos shell directamente
+
+**Endpoints Adicionales:**
+- `/api/execute` - Ejecutar comandos shell via JSON
+- `/health` - Health check para Render
+
+**Sistema de Usuario:**
+- USER.md, AGENTS.md, IDENTITY.md para auto-conciencia del agente
+- skill-creator - Crea skills desde conversación
+- skill-adapter - Adapta skills de otras plataformas (OpenAI, LangChain, n8n)
+
+**Mejoras de Deployment:**
+- Puerto dinámico ($PORT) en Dockerfile
+- Checklist de pre-deploy en documentación
+- Guía de mantenimiento y operaciones
 
 ---
 

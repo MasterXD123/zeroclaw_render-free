@@ -7,7 +7,7 @@ services:
     
     # Build configuration
     buildCommand: docker build -t zeroclaw -f Dockerfile.render .
-    startCommand: docker run -p $PORT:$PORT -e API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND=true zeroclaw
+    startCommand: docker run -p $PORT:$PORT -e OPENROUTER_API_KEY -e PROVIDER -e ZEROCLAW_MODEL -e ZEROCLAW_ALLOW_PUBLIC_BIND zeroclaw
     
     # Environment variables (set in Render Dashboard)
     envVars:

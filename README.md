@@ -71,6 +71,28 @@ Ver [RENDER_DIFF.md](./RENDER_DIFF.md) para detalles completos.
 
 ---
 
+## Checklist de Pre-Deploy ✅
+
+Antes de hacer deploy, verifica que tienes todo listo:
+
+- [ ] **API Key de OpenRouter** - Tengo mi key (comienza con `sk-or-v1-`)
+- [ ] **Modelo seleccionado** - Elegí un modelo a usar
+- [ ] **Entiendo las limitaciones** - Sé que pierdo datos al redeployar
+- [ ] **Plan de keep-alive** - Tengo forma de mantener el servicio activo
+- [ ] **Entiendo el tier gratuito** - Sé que el servicio duerme después de 15 min
+
+### Modelos Recomendados para Render Free
+
+| Modelo | Costo/Mes | Calidad | Notas |
+|--------|-----------|---------|-------|
+| `openrouter/free` | $0 | ⭐⭐ | Limitado, a veces falla |
+| `openrouter/google/gemma-4-27b-it` | ~$0.10 | ⭐⭐⭐⭐ | Mejor relación calidad/precio |
+| `openrouter/anthropic/claude-3-haiku` | ~$0.20 | ⭐⭐⭐⭐⭐ | Rápido y excelente |
+
+> ⚠️ **Importante**: El modelo `openrouter/free` es muy limitado. Para mejor experiencia, usa `gemma-4-27b-it` o `claude-3-haiku`.
+
+---
+
 ## Configuración de OpenRouter
 
 ### Paso 1: Crear Cuenta
@@ -348,6 +370,38 @@ ZeroClaw incluye un sistema de configuración de usuario. Al decir "configuraci�
 3. **Estilo**: formal / casual
 
 Estos datos se guardan en memoria SQLite.
+
+---
+
+## Mantenimiento y Operaciones
+
+### ¿Qué se pierde al redeployar?
+
+En Render free tier, cada redeploy borra:
+- ❌ Memoria SQLite (conversaciones, contexto)
+- ❌ Configuración de usuario (nombre, permisos)
+- ❌ Skills creadas dinámicamente (vía API)
+- ❌ Estado del agente
+
+Lo que se mantiene:
+- ✅ Código de la aplicación (del repositorio)
+- ✅ Archivos en el Dockerfile (USER.md, AGENTS.md, skills del repo)
+
+### Cómo hacer backup antes de un redeploy
+
+1. Exportar config importante manualmente
+2. Documentar variables de entorno usadas
+3. Si tienes skills creadas, exportarlas vía API:
+   ```bash
+   curl https://tu-servicio.onrender.com/api/skills
+   ```
+
+### Cómo hacer rollback
+
+1. En Render Dashboard, ir a tu servicio
+2. Click **"Deploys"**
+3. Seleccionar un deploy anterior
+4. Click **"Redeploy"**
 
 ---
 
