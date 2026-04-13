@@ -64,6 +64,13 @@ if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "api_key = \"$OPENROUTER_API_KEY\"" >> "$CONFIG_FILE"
 fi
 
+# Agregar Google Workspace
+if [ -n "$GOOGLE_REFRESH_TOKEN" ] && [ -n "$GOOGLE_CLIENT_ID" ] && [ -n "$GOOGLE_CLIENT_SECRET" ]; then
+    echo "" >> "$CONFIG_FILE"
+    echo "[google_workspace]" >> "$CONFIG_FILE"
+    echo "enabled = true" >> "$CONFIG_FILE"
+fi
+
 echo "Config generated:"
 cat "$CONFIG_FILE"
 
