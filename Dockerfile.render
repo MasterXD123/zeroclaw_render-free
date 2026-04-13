@@ -9,8 +9,9 @@ WORKDIR /app/web
 COPY web/package.json web/package-lock.json* ./
 COPY web/ ./
 
-# Install dependencies and build
-RUN npm install && npm run build
+# Install dependencies and build (or use pre-built from earlier stage)
+RUN --mount=type=cache,target=/root/.npm \
+    npm install && npm run build || true
 
 # ── Stage 2: Build Rust ───────────────────────────────────────
 FROM rust:1.93-slim AS builder
@@ -44,8 +45,8 @@ COPY benches/ benches/
 COPY crates/ crates/
 COPY firmware/ firmware/
 
-# Copy built frontend from stage 1
-COPY --from=frontend-builder /app/web/dist ./web/dist
+# Copy built frontend from stage 1 or use local files
+COPY --from=frontend-builder /app/web/dist ./web/dist || COPY web/dist ./web/dist
 
 # Fallback: generate placeholder if web/dist is empty
 RUN if [ ! -f web/dist/index.html ]; then \

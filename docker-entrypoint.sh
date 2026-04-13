@@ -11,7 +11,7 @@ default_model = "openrouter/free"
 default_temperature = 0.7
 
 [gateway]
-port = 10000
+port = ${PORT:-10000}
 host = "[::]"
 allow_public_bind = true
 require_pairing = false
