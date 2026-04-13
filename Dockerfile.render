@@ -47,6 +47,12 @@ COPY firmware/ firmware/
 # Copy built frontend from stage 1
 COPY --from=frontend-builder /app/web/dist ./web/dist
 
+# Fallback: generate placeholder if web/dist is empty
+RUN if [ ! -f web/dist/index.html ]; then \
+    mkdir -p web/dist && \
+    printf '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ZeroClaw Dashboard</title></head><body><h1>ZeroClaw Dashboard Unavailable</h1><p>Frontend assets not bundled.</p></body></html>' > web/dist/index.html; \
+fi
+
 RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=zeroclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=zeroclaw-target,target=/app/target,sharing=locked \
