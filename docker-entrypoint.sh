@@ -3,6 +3,12 @@ set -e
 
 CONFIG_FILE="/zeroclaw-data/.zeroclaw/config.toml"
 
+# Debug: print environment variables
+echo "=== Environment Debug ==="
+echo "OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:0:10}..."
+echo "TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:0:10}..."
+echo "==========================="
+
 # Get API key from OPENROUTER_API_KEY env var
 API_KEY="${OPENROUTER_API_KEY:-}"
 
@@ -70,6 +76,8 @@ if [ -n "$GOOGLE_REFRESH_TOKEN" ] && [ -n "$GOOGLE_CLIENT_ID" ] && [ -n "$GOOGLE
 fi
 
 echo "Config generated:"
+echo "==================="
 cat "$CONFIG_FILE"
+echo "==================="
 
 exec "$@"
