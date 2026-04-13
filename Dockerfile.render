@@ -45,15 +45,11 @@ COPY benches/ benches/
 COPY crates/ crates/
 COPY firmware/ firmware/
 
-# Copy built frontend from stage 1 OR force include from local build
-# If stage 1 fails, will use local web/dist
-COPY --from=frontend-builder /app/web/dist ./web/dist || cp -r web/dist/. web/dist/ || true
+# Copy built frontend from stage 1 OR use local web/dist
+COPY --from=frontend-builder /app/web/dist ./web/dist
 
 # Ensure web/dist exists with content
-RUN mkdir -p web/dist && \
-    if [ ! -f web/dist/index.html ]; then \
-        printf '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ZeroClaw Dashboard</title></head><body><h1>ZeroClaw Dashboard</h1><p>Loading...</p></body></html>' > web/dist/index.html; \
-    fi
+RUN mkdir -p web/dist
 
 RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=zeroclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
@@ -76,25 +72,29 @@ RUN chmod -R 777 /zeroclaw-data/workspace/skills
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# ── Stage 3: Production Runtime (Distroless) ─────────────────
-FROM gcr.io/distroless/cc-debian13:debug AS release
+# ── Stage 3: Production Runtime (Debian for shell access) ───────────────
+FROM debian:trixie-slim@sha256:f6e2cfac5cf956ea044b4bd75e6397b4372ad88fe00908045e9a0d21712ae3ba AS release
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    procps \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && (id 65534 || useradd -m -u 65534 zeroclaw) || true
 
 COPY --from=builder /app/zeroclaw /usr/local/bin/zeroclaw
 COPY --from=builder /zeroclaw-data /zeroclaw-data
-
-# Copy shell from builder stage (Debian has sh)
-COPY --from=builder /bin/sh /bin/sh
-COPY --from=builder /usr/bin/env /usr/bin/env
 COPY --from=builder /docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN chmod +x /docker-entrypoint.sh; \
+    chown -R 65534:65534 /zeroclaw-data || true
 
 ENV ZEROCLAW_WORKSPACE=/zeroclaw-data/workspace
 ENV HOME=/zeroclaw-data
 
 WORKDIR /zeroclaw-data
-USER 65534:65534
 
-# Usar variable PORT de entorno (Render la provee automáticamente)
-# Si PORT no está definido, usa 10000 por defecto
 ENV PORT=${PORT:-42617}
 
 EXPOSE 42617

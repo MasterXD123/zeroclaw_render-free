@@ -296,7 +296,14 @@ impl Tool for ContentSearchTool {
 
         // Security: remove dangerous environment variables but keep PATH
         // so executables (rg/grep) can be found
-        let dangerous_vars = ["LD_PRELOAD", "DYLD_INSERT_LIBRARIES", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY"];
+        let dangerous_vars = [
+            "LD_PRELOAD",
+            "DYLD_INSERT_LIBRARIES",
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "ALL_PROXY",
+            "NO_PROXY",
+        ];
         for key in dangerous_vars {
             cmd.env_remove(key);
         }
@@ -747,7 +754,10 @@ mod tests {
         create_test_files(&dir);
 
         // Use ripgrep binary path directly (Windows format) to avoid shell function lookup issues
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool.execute(json!({"pattern": "fn main"})).await.unwrap();
 
         assert!(result.success, "search failed: {:?}", result.error);
@@ -760,7 +770,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "println", "output_mode": "files_with_matches"}))
             .await
@@ -778,7 +791,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "println", "output_mode": "count"}))
             .await
@@ -795,7 +811,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("test.txt"), "Hello World\nhello world\n").unwrap();
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "HELLO", "case_sensitive": false}))
             .await
@@ -811,7 +830,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "fn", "include": "*.rs"}))
             .await
@@ -831,7 +853,10 @@ mod tests {
         )
         .unwrap();
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "target_line", "context_before": 1, "context_after": 1}))
             .await
@@ -848,7 +873,10 @@ mod tests {
         let dir = TempDir::new().unwrap();
         create_test_files(&dir);
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "nonexistent_string_xyz"}))
             .await
@@ -900,7 +928,10 @@ mod tests {
         std::fs::write(dir.path().join("sub/deep/nested.rs"), "fn nested() {}\n").unwrap();
         std::fs::write(dir.path().join("root.rs"), "fn root() {}\n").unwrap();
 
-        let tool = ContentSearchTool::new_with_backend(test_security(dir.path().to_path_buf()), Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"));
+        let tool = ContentSearchTool::new_with_backend(
+            test_security(dir.path().to_path_buf()),
+            Some("C:\\Users\\user\\.cache\\opencode\\bin\\rg.exe"),
+        );
         let result = tool
             .execute(json!({"pattern": "fn nested", "path": "sub"}))
             .await

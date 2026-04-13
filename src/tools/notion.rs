@@ -33,7 +33,12 @@ impl NotionTool {
 
     fn headers(&self) -> reqwest::header::HeaderMap {
         let mut h = reqwest::header::HeaderMap::new();
-        h.insert("Authorization", format!("Bearer {}", self.get_api_key().unwrap_or_default()).parse().unwrap());
+        h.insert(
+            "Authorization",
+            format!("Bearer {}", self.get_api_key().unwrap_or_default())
+                .parse()
+                .unwrap(),
+        );
         h.insert("Content-Type", "application/json".parse().unwrap());
         h.insert("Notion-Version", "2022-06-28".parse().unwrap());
         h
@@ -87,7 +92,11 @@ impl NotionTool {
         r.json().await.map_err(|e| e.to_string())
     }
 
-    pub async fn query_database(&self, db_id: &str, filter: Option<Value>) -> Result<Value, String> {
+    pub async fn query_database(
+        &self,
+        db_id: &str,
+        filter: Option<Value>,
+    ) -> Result<Value, String> {
         let url = format!("https://api.notion.com/v1/databases/{}/query", db_id);
         let mut body = json!({});
         if let Some(f) = filter {
@@ -107,7 +116,12 @@ impl NotionTool {
         r.json().await.map_err(|e| e.to_string())
     }
 
-    pub async fn create_page(&self, parent_id: &str, properties: Value, children: Option<Value>) -> Result<Value, String> {
+    pub async fn create_page(
+        &self,
+        parent_id: &str,
+        properties: Value,
+        children: Option<Value>,
+    ) -> Result<Value, String> {
         let url = "https://api.notion.com/v1/pages";
         let mut body = json!({
             "parent": { "page_id": parent_id },

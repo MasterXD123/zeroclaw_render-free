@@ -34,9 +34,7 @@ impl Value {
         match v {
             serde_json::Value::Null => Value::Null,
             serde_json::Value::Bool(b) => Value::Bool(*b),
-            serde_json::Value::Number(n) => {
-                Value::Number(n.as_f64().unwrap_or(0.0))
-            }
+            serde_json::Value::Number(n) => Value::Number(n.as_f64().unwrap_or(0.0)),
             serde_json::Value::String(s) => Value::String(s.clone()),
             _ => Value::String(v.to_string()),
         }
@@ -44,56 +42,46 @@ impl Value {
 
     fn compare(&self, op: &str, other: &Value) -> Result<bool, String> {
         match (self, other) {
-            (Value::Null, _) | (_, Value::Null) => {
-                match op {
-                    "==" => Ok(matches!((self, other), (Value::Null, Value::Null))),
-                    "!=" => Ok(!matches!((self, other), (Value::Null, Value::Null))),
-                    "is_null" => Ok(matches!(self, Value::Null)),
-                    "is_not_null" => Ok(!matches!(self, Value::Null)),
-                    _ => Err(format!("Cannot compare null with '{}'", op)),
-                }
-            }
-            (Value::Number(a), Value::Number(b)) => {
-                match op {
-                    "==" => Ok((a - b).abs() < 1e-10),
-                    "!=" => Ok((a - b).abs() >= 1e-10),
-                    "<" => Ok(a < b),
-                    "<=" => Ok(a <= b),
-                    ">" => Ok(a > b),
-                    ">=" => Ok(a >= b),
-                    _ => Err(format!("Unknown operator '{}' for numbers", op)),
-                }
-            }
-            (Value::String(a), Value::String(b)) => {
-                match op {
-                    "==" => Ok(a == b),
-                    "!=" => Ok(a != b),
-                    "<" => Ok(a < b),
-                    "<=" => Ok(a <= b),
-                    ">" => Ok(a > b),
-                    ">=" => Ok(a >= b),
-                    "contains" => Ok(a.contains(b)),
-                    "starts_with" => Ok(a.starts_with(b)),
-                    "ends_with" => Ok(a.ends_with(b)),
-                    "matches" => {
-                        match regex::Regex::new(b) {
-                            Ok(re) => Ok(re.is_match(a)),
-                            Err(e) => Err(format!("Invalid regex: {}", e)),
-                        }
-                    }
-                    "in" => Ok(b.contains(a)),
-                    _ => Err(format!("Unknown operator '{}' for strings", op)),
-                }
-            }
-            (Value::Bool(a), Value::Bool(b)) => {
-                match op {
-                    "==" => Ok(a == b),
-                    "!=" => Ok(a != b),
-                    "and" => Ok(*a && *b),
-                    "or" => Ok(*a || *b),
-                    _ => Err(format!("Operator '{}' not supported for booleans", op)),
-                }
-            }
+            (Value::Null, _) | (_, Value::Null) => match op {
+                "==" => Ok(matches!((self, other), (Value::Null, Value::Null))),
+                "!=" => Ok(!matches!((self, other), (Value::Null, Value::Null))),
+                "is_null" => Ok(matches!(self, Value::Null)),
+                "is_not_null" => Ok(!matches!(self, Value::Null)),
+                _ => Err(format!("Cannot compare null with '{}'", op)),
+            },
+            (Value::Number(a), Value::Number(b)) => match op {
+                "==" => Ok((a - b).abs() < 1e-10),
+                "!=" => Ok((a - b).abs() >= 1e-10),
+                "<" => Ok(a < b),
+                "<=" => Ok(a <= b),
+                ">" => Ok(a > b),
+                ">=" => Ok(a >= b),
+                _ => Err(format!("Unknown operator '{}' for numbers", op)),
+            },
+            (Value::String(a), Value::String(b)) => match op {
+                "==" => Ok(a == b),
+                "!=" => Ok(a != b),
+                "<" => Ok(a < b),
+                "<=" => Ok(a <= b),
+                ">" => Ok(a > b),
+                ">=" => Ok(a >= b),
+                "contains" => Ok(a.contains(b)),
+                "starts_with" => Ok(a.starts_with(b)),
+                "ends_with" => Ok(a.ends_with(b)),
+                "matches" => match regex::Regex::new(b) {
+                    Ok(re) => Ok(re.is_match(a)),
+                    Err(e) => Err(format!("Invalid regex: {}", e)),
+                },
+                "in" => Ok(b.contains(a)),
+                _ => Err(format!("Unknown operator '{}' for strings", op)),
+            },
+            (Value::Bool(a), Value::Bool(b)) => match op {
+                "==" => Ok(a == b),
+                "!=" => Ok(a != b),
+                "and" => Ok(*a && *b),
+                "or" => Ok(*a || *b),
+                _ => Err(format!("Operator '{}' not supported for booleans", op)),
+            },
             (Value::Number(n), Value::String(s)) | (Value::String(s), Value::Number(n)) => {
                 // Try numeric comparison if string is numeric
                 if let (Some(num), n_val) = (s.parse::<f64>().ok(), *n) {
@@ -107,10 +95,18 @@ impl Value {
                         _ => Err(format!("Operator '{}' not supported for string-number", op)),
                     }
                 } else {
-                    Err(format!("Cannot compare {} with {}", self.type_name(), other.type_name()))
+                    Err(format!(
+                        "Cannot compare {} with {}",
+                        self.type_name(),
+                        other.type_name()
+                    ))
                 }
             }
-            _ => Err(format!("Cannot compare {} with {}", self.type_name(), other.type_name())),
+            _ => Err(format!(
+                "Cannot compare {} with {}",
+                self.type_name(),
+                other.type_name()
+            )),
         }
     }
 
@@ -133,18 +129,17 @@ fn eval_condition(cond: &serde_json::Value) -> Result<bool, String> {
     if let Some(obj) = cond.as_object() {
         if let Some(left) = obj.get("left") {
             let left_val = Value::from_json(left);
-            let op = obj.get("op")
+            let op = obj
+                .get("op")
                 .and_then(|v| v.as_str())
                 .ok_or("Missing 'op' in condition")?;
-            let right = obj.get("right")
-                .ok_or("Missing 'right' in condition")?;
+            let right = obj.get("right").ok_or("Missing 'right' in condition")?;
             let right_val = Value::from_json(right);
             return left_val.compare(op, &right_val);
         }
 
         if let Some(conditions) = obj.get("and") {
-            let arr = conditions.as_array()
-                .ok_or("'and' must be an array")?;
+            let arr = conditions.as_array().ok_or("'and' must be an array")?;
             for c in arr {
                 if !eval_condition(c)? {
                     return Ok(false);
@@ -154,8 +149,7 @@ fn eval_condition(cond: &serde_json::Value) -> Result<bool, String> {
         }
 
         if let Some(conditions) = obj.get("or") {
-            let arr = conditions.as_array()
-                .ok_or("'or' must be an array")?;
+            let arr = conditions.as_array().ok_or("'or' must be an array")?;
             for c in arr {
                 if eval_condition(c)? {
                     return Ok(true);
@@ -169,11 +163,15 @@ fn eval_condition(cond: &serde_json::Value) -> Result<bool, String> {
         }
 
         if let Some(v) = obj.get("is_null") {
-            return Ok(Value::from_json(v).compare("is_null", &Value::Null).is_ok_and(|r| r));
+            return Ok(Value::from_json(v)
+                .compare("is_null", &Value::Null)
+                .is_ok_and(|r| r));
         }
 
         if let Some(v) = obj.get("is_not_null") {
-            return Ok(Value::from_json(v).compare("is_not_null", &Value::Null).is_ok_and(|r| r));
+            return Ok(Value::from_json(v)
+                .compare("is_not_null", &Value::Null)
+                .is_ok_and(|r| r));
         }
     }
 
@@ -253,9 +251,8 @@ impl Tool for DecisionTool {
 
     async fn execute(&self, args: serde_json::Value) -> anyhow::Result<ToolResult> {
         // Evaluate a single condition
-        let condition_match = |cond: &serde_json::Value| -> Result<bool, String> {
-            eval_condition(cond)
-        };
+        let condition_match =
+            |cond: &serde_json::Value| -> Result<bool, String> { eval_condition(cond) };
 
         // Handle if_true/if_false pattern
         if let Some(cond) = args.get("condition") {

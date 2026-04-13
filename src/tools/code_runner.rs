@@ -19,9 +19,7 @@ pub struct CodeRunnerTool {
 
 impl CodeRunnerTool {
     pub fn new() -> Self {
-        Self {
-            timeout_ms: 10_000,
-        }
+        Self { timeout_ms: 10_000 }
     }
 
     pub fn with_timeout(timeout_ms: u64) -> Self {
@@ -214,10 +212,7 @@ mod tests {
 
     #[tokio::test]
     async fn basic_arithmetic() {
-        let result = test_tool()
-            .execute(json!({"code": "2 + 2"}))
-            .await
-            .unwrap();
+        let result = test_tool().execute(json!({"code": "2 + 2"})).await.unwrap();
         assert!(result.success, "error: {:?}", result.error);
         assert!(result.output.contains("4"), "got: {}", result.output);
     }
@@ -311,7 +306,11 @@ mod tests {
             .await
             .unwrap();
         assert!(result.success, "error: {:?}", result.error);
-        assert!(result.output.contains("test") && result.output.contains("42"), "got: {}", result.output);
+        assert!(
+            result.output.contains("test") && result.output.contains("42"),
+            "got: {}",
+            result.output
+        );
     }
 
     #[tokio::test]

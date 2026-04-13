@@ -61,8 +61,6 @@ RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/regist
 # Prepare runtime directory structure and default config inline (no extra stage)
 RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
     printf '%s\n' \
-        'workspace_dir = "/zeroclaw-data/workspace"' \
-        'config_path = "/zeroclaw-data/.zeroclaw/config.toml"' \
         'api_key = ""' \
         'default_provider = "openrouter"' \
         'default_model = "openrouter/free"' \
@@ -72,9 +70,22 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
         'port = 42617' \
         'host = "[::]"' \
         'allow_public_bind = true' \
+        'require_pairing = false' \
         '' \
-        '[google_workspace]' \
-        'enabled = true' \
+        '[autonomy]' \
+        'level = "full"' \
+        'workspace_only = false' \
+        'block_high_risk_commands = false' \
+        'max_actions_per_hour = 100' \
+        'max_cost_per_day_cents = 10000' \
+        'allowed_commands = ["git", "npm", "node", "cargo", "python", "pip", "curl", "wget", "ls", "cat", "grep", "find", "echo", "pwd", "mkdir", "rm", "cp", "mv", "chmod"]' \
+        'forbidden_paths = []' \
+        'site_rules = []' \
+        '' \
+        '[memory]' \
+        'backend = "sqlite"' \
+        'auto_save = true' \
+        'hygiene_enabled = true' \
         '' \
         '[channels_config]' \
         'cli = false' \
@@ -134,7 +145,7 @@ ENV ZEROCLAW_AUTOSTART_CHANNELS=1
 #ENV PROVIDER=
 ENV ZEROCLAW_GATEWAY_PORT=42617
 
-# API_KEY must be provided at runtime!
+# OPENROUTER_API_KEY must be provided at runtime (set via -e flag or Render env vars)
 
 WORKDIR /zeroclaw-data
 USER 65534:65534

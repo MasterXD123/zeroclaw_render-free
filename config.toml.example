@@ -127,6 +127,18 @@ host = "127.0.0.0"
 require_pairing = true
 allow_public_bind = false
 
+# Google Workspace integration (optional)
+# Supports OAuth 2.0 (personal Gmail) and Service Account (Google Workspace)
+# [google_workspace]
+# enabled = false
+# # OAuth 2.0 (for personal @gmail.com accounts)
+# refresh_token = "your_refresh_token"
+# client_id = "xxx.apps.googleusercontent.com"
+# client_secret = "xxx"
+# # Service Account (for Google Workspace/Organization)
+# service_account_path = "/path/to/service-account.json"
+# service_account_json = '{"type":"service_account",...}'
+
 [secrets]
 encrypt = true
 

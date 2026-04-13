@@ -42,7 +42,13 @@ impl TimeTrackerTool {
         let days = hours / 24;
 
         if days > 0 {
-            format!("{}d {}h {}m {}s", days, hours % 24, minutes % 60, seconds % 60)
+            format!(
+                "{}d {}h {}m {}s",
+                days,
+                hours % 24,
+                minutes % 60,
+                seconds % 60
+            )
         } else if hours > 0 {
             format!("{}h {}m {}s", hours, minutes % 60, seconds % 60)
         } else if minutes > 0 {
@@ -202,7 +208,8 @@ impl Tool for TimeTrackerTool {
                         "duration_ms": elapsed_ms,
                         "duration_human": duration_str,
                         "labels": session.labels
-                    }).to_string(),
+                    })
+                    .to_string(),
                     error: None,
                 })
             }
@@ -217,7 +224,8 @@ impl Tool for TimeTrackerTool {
                         output: json!({
                             "active_tasks": [],
                             "count": 0
-                        }).to_string(),
+                        })
+                        .to_string(),
                         error: None,
                     });
                 }
@@ -241,7 +249,8 @@ impl Tool for TimeTrackerTool {
                     output: json!({
                         "active_tasks": active,
                         "count": active.len()
-                    }).to_string(),
+                    })
+                    .to_string(),
                     error: None,
                 })
             }
@@ -273,20 +282,19 @@ impl Tool for TimeTrackerTool {
                                 "elapsed_human": Self::format_duration(elapsed_ms),
                                 "labels": s.labels,
                                 "running": true
-                            }).to_string(),
+                            })
+                            .to_string(),
                             error: None,
                         })
                     }
-                    None => {
-                        Ok(ToolResult {
-                            success: false,
-                            output: String::new(),
-                            error: Some(format!(
-                                "No timer found for task '{}' (never started or already stopped)",
-                                task_id
-                            )),
-                        })
-                    }
+                    None => Ok(ToolResult {
+                        success: false,
+                        output: String::new(),
+                        error: Some(format!(
+                            "No timer found for task '{}' (never started or already stopped)",
+                            task_id
+                        )),
+                    }),
                 }
             }
 

@@ -100,8 +100,11 @@ fn evaluate_expression(expr: &str, precision: usize) -> Result<String, String> {
     }
 
     // Check for dangerous patterns
-    if expr.contains("__") || expr.to_lowercase().contains("eval")
-        || expr.to_lowercase().contains("exec") || expr.contains("0x") {
+    if expr.contains("__")
+        || expr.to_lowercase().contains("eval")
+        || expr.to_lowercase().contains("exec")
+        || expr.contains("0x")
+    {
         return Err("Expression contains disallowed patterns".to_string());
     }
 
@@ -140,7 +143,11 @@ fn handle_power(expr: &str) -> Result<String, String> {
                 base_end -= 1;
             }
             let mut base_start = base_end;
-            while base_start > 0 && (chars[base_start - 1].is_numeric() || chars[base_start - 1] == ')' || chars[base_start - 1] == 'e') {
+            while base_start > 0
+                && (chars[base_start - 1].is_numeric()
+                    || chars[base_start - 1] == ')'
+                    || chars[base_start - 1] == 'e')
+            {
                 base_start -= 1;
             }
             let base = &expr[base_start..base_end];
@@ -201,7 +208,10 @@ fn format_result(value: f64, precision: usize) -> Result<String, String> {
 
     // Remove trailing zeros after decimal point
     let trimmed = if formatted.contains('.') {
-        formatted.trim_end_matches('0').trim_end_matches('.').to_string()
+        formatted
+            .trim_end_matches('0')
+            .trim_end_matches('.')
+            .to_string()
     } else {
         formatted
     };

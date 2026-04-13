@@ -189,7 +189,14 @@ impl TaskTrackerTool {
             format!("{}/{}", plan_id, task_id)
         };
 
-        let task = Task::new(full_id.clone(), plan_id, description, priority, task_type, dependencies);
+        let task = Task::new(
+            full_id.clone(),
+            plan_id,
+            description,
+            priority,
+            task_type,
+            dependencies,
+        );
 
         let mut tasks = self.tasks.lock().await;
         tasks.insert(full_id.clone(), task);
@@ -569,14 +576,19 @@ mod tests {
         let tool = test_tool();
 
         // Create
-        let create_result = tool.execute(json!({
-            "action": "create",
-            "task_id": "t1",
-            "description": "Test"
-        }))
-        .await
-        .unwrap();
-        assert!(create_result.success, "create failed: {:?}", create_result.error);
+        let create_result = tool
+            .execute(json!({
+                "action": "create",
+                "task_id": "t1",
+                "description": "Test"
+            }))
+            .await
+            .unwrap();
+        assert!(
+            create_result.success,
+            "create failed: {:?}",
+            create_result.error
+        );
 
         // Update
         let result = tool
@@ -600,15 +612,21 @@ mod tests {
         let tool = test_tool();
 
         // Create multiple
-        tool.execute(json!({ "action": "create", "task_id": "p1/1", "plan_id": "p1", "priority": "p0" }))
-            .await
-            .unwrap();
-        tool.execute(json!({ "action": "create", "task_id": "p1/2", "plan_id": "p1", "priority": "p2" }))
-            .await
-            .unwrap();
-        tool.execute(json!({ "action": "create", "task_id": "p2/1", "plan_id": "p2", "priority": "p1" }))
-            .await
-            .unwrap();
+        tool.execute(
+            json!({ "action": "create", "task_id": "p1/1", "plan_id": "p1", "priority": "p0" }),
+        )
+        .await
+        .unwrap();
+        tool.execute(
+            json!({ "action": "create", "task_id": "p1/2", "plan_id": "p1", "priority": "p2" }),
+        )
+        .await
+        .unwrap();
+        tool.execute(
+            json!({ "action": "create", "task_id": "p2/1", "plan_id": "p2", "priority": "p1" }),
+        )
+        .await
+        .unwrap();
 
         // List all
         let all = tool.execute(json!({ "action": "list" })).await.unwrap();
@@ -637,9 +655,11 @@ mod tests {
     async fn delete_task() {
         let tool = test_tool();
 
-        tool.execute(json!({ "action": "create", "task_id": "todelete", "description": "To be deleted" }))
-            .await
-            .unwrap();
+        tool.execute(
+            json!({ "action": "create", "task_id": "todelete", "description": "To be deleted" }),
+        )
+        .await
+        .unwrap();
 
         let result = tool
             .execute(json!({ "action": "delete", "task_id": "todelete" }))
@@ -686,24 +706,26 @@ mod tests {
     async fn dependencies_tracking() {
         let tool = test_tool();
 
-        let r1 = tool.execute(json!({
-            "action": "create",
-            "task_id": "1",
-            "description": "First",
-            "dependencies": []
-        }))
-        .await
-        .unwrap();
+        let r1 = tool
+            .execute(json!({
+                "action": "create",
+                "task_id": "1",
+                "description": "First",
+                "dependencies": []
+            }))
+            .await
+            .unwrap();
         assert!(r1.success, "create 1 failed: {:?}", r1.error);
 
-        let r2 = tool.execute(json!({
-            "action": "create",
-            "task_id": "2",
-            "description": "Second",
-            "dependencies": ["1"]
-        }))
-        .await
-        .unwrap();
+        let r2 = tool
+            .execute(json!({
+                "action": "create",
+                "task_id": "2",
+                "description": "Second",
+                "dependencies": ["1"]
+            }))
+            .await
+            .unwrap();
         assert!(r2.success, "create 2 failed: {:?}", r2.error);
 
         let task2 = tool

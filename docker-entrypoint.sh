@@ -3,14 +3,23 @@ set -e
 
 CONFIG_FILE="/zeroclaw-data/.zeroclaw/config.toml"
 
-# Debug: print environment variables
+# Debug: print environment variables 
 echo "=== Environment Debug ==="
-echo "OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:0:10}..."
-echo "TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:0:10}..."
+if [ -n "$OPENROUTER_API_KEY" ]; then
+  echo "OPENROUTER_API_KEY: set"
+else
+  echo "OPENROUTER_API_KEY: not set"
+fi
 echo "==========================="
 
-# Get API key from OPENROUTER_API_KEY env var
+# Get API key from OPENROUTER_API_KEY env var (zeroclaw reads this directly)
+# Also store in config for backwards compatibility
 API_KEY="${OPENROUTER_API_KEY:-}"
+
+# Ensure OPENROUTER_API_KEY is exported for zeroclaw to find
+if [ -n "$API_KEY" ]; then
+    export OPENROUTER_API_KEY="$API_KEY"
+fi
 
 # Generate base config.toml
 cat > "$CONFIG_FILE" << EOF

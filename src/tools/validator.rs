@@ -144,9 +144,7 @@ impl Tool for ValidatorTool {
             }
         };
 
-        let schema_name = args
-            .get("schema_name")
-            .and_then(|v| v.as_str());
+        let schema_name = args.get("schema_name").and_then(|v| v.as_str());
 
         Ok(self.validate_json(&data, &schema, schema_name))
     }
