@@ -3,13 +3,16 @@ set -e
 
 CONFIG_FILE="/zeroclaw-data/.zeroclaw/config.toml"
 
-# Generar config.toml base con valores por defecto
-cat > "$CONFIG_FILE" << 'EOF'
+# Get API key from OPENROUTER_API_KEY env var
+API_KEY="${OPENROUTER_API_KEY:-}"
+
+# Generate base config.toml
+cat > "$CONFIG_FILE" << EOF
 workspace_dir = "/zeroclaw-data/workspace"
 default_provider = "openrouter"
 default_model = "openrouter/free"
 default_temperature = 0.7
-api_key = ""
+api_key = "$API_KEY"
 
 [gateway]
 port = 42617
@@ -36,9 +39,8 @@ hygiene_enabled = true
 cli = true
 EOF
 
-# Agregar Telegram si TELEGRAM_BOT_TOKEN está configurado
+# Add Telegram if configured
 if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
-    # Agregar allowed_users de variable o usar "*" por defecto
     USERS="${TELEGRAM_ALLOWED_USERS:-*}"
     echo "" >> "$CONFIG_FILE"
     echo "[channels_config.telegram]" >> "$CONFIG_FILE"
@@ -46,28 +48,21 @@ if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
     echo "allowed_users = [\"$USERS\"]" >> "$CONFIG_FILE"
 fi
 
-# Agregar Notion si NOTION_KEY está configurado
+# Add Notion if configured
 if [ -n "$NOTION_KEY" ]; then
     echo "" >> "$CONFIG_FILE"
     echo "[channels_config.notion]" >> "$CONFIG_FILE"
     echo "api_key = \"$NOTION_KEY\"" >> "$CONFIG_FILE"
 fi
 
-# Agregar GitHub si GITHUB_TOKEN está configurado
+# Add GitHub if configured
 if [ -n "$GITHUB_TOKEN" ]; then
     echo "" >> "$CONFIG_FILE"
     echo "[channels_config.github]" >> "$CONFIG_FILE"
     echo "token = \"$GITHUB_TOKEN\"" >> "$CONFIG_FILE"
 fi
 
-# Agregar OpenRouter API key
-if [ -n "$OPENROUTER_API_KEY" ]; then
-    echo "api_key = \"$OPENROUTER_API_KEY\"" >> "$CONFIG_FILE"
-else
-    echo "api_key = \"\"" >> "$CONFIG_FILE"
-fi
-
-# Agregar Google Workspace
+# Add Google Workspace if configured
 if [ -n "$GOOGLE_REFRESH_TOKEN" ] && [ -n "$GOOGLE_CLIENT_ID" ] && [ -n "$GOOGLE_CLIENT_SECRET" ]; then
     echo "" >> "$CONFIG_FILE"
     echo "[google_workspace]" >> "$CONFIG_FILE"
