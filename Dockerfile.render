@@ -94,8 +94,8 @@ USER 65534:65534
 
 # Usar variable PORT de entorno (Render la provee automáticamente)
 # Si PORT no está definido, usa 10000 por defecto
-ENV PORT=${PORT:-10000}
+ENV PORT=${PORT:-42617}
 
-EXPOSE 10000
+EXPOSE 42617
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["zeroclaw", "daemon"]

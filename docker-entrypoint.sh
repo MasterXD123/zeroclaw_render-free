@@ -12,7 +12,7 @@ default_temperature = 0.7
 api_key = ""
 
 [gateway]
-port = 10000
+port = 42617
 host = "[::]"
 allow_public_bind = true
 require_pairing = false
