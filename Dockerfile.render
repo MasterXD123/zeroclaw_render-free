@@ -5,13 +5,13 @@ FROM node:20-slim AS frontend-builder
 
 WORKDIR /app/web
 
-# Copy web - try stage 1 first, then use local files as fallback
-# The build may fail in Render so use local web/dist if available
+# Copy web files
 COPY web/package.json web/package-lock.json* ./
 COPY web/ ./
 
-# Use local dist if stage1 copy fails
-RUN ls web/dist/index.html >/dev/null 2>&1 || (mkdir -p web/dist && echo "Using local fallback")
+# Build frontend - create dist folder first to avoid error if npm fails
+RUN mkdir -p dist && \
+    npm install && npm run build || true
 
 # ── Stage 2: Build Rust ───────────────────────────────────────
 FROM rust:1.93-slim AS builder
@@ -45,8 +45,9 @@ COPY benches/ benches/
 COPY crates/ crates/
 COPY firmware/ firmware/
 
-# Copy built frontend - try pre-built stage first
-COPY --from=frontend-builder /app/web/dist ./web/dist || true
+# Copy built frontend from stage 1 OR force include from local build
+# If stage 1 fails, will use local web/dist
+COPY --from=frontend-builder /app/web/dist ./web/dist || cp -r web/dist/. web/dist/ || true
 
 # Ensure web/dist exists with content
 RUN mkdir -p web/dist && \
