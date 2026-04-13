@@ -9,9 +9,10 @@ workspace_dir = "/zeroclaw-data/workspace"
 default_provider = "openrouter"
 default_model = "openrouter/free"
 default_temperature = 0.7
+api_key = ""
 
 [gateway]
-port = ${PORT:-10000}
+port = 10000
 host = "[::]"
 allow_public_bind = true
 require_pairing = false

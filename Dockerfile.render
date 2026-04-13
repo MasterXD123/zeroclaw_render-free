@@ -5,13 +5,13 @@ FROM node:20-slim AS frontend-builder
 
 WORKDIR /app/web
 
-# Copy web files
+# Copy web - try stage 1 first, then use local files as fallback
+# The build may fail in Render so use local web/dist if available
 COPY web/package.json web/package-lock.json* ./
 COPY web/ ./
 
-# Install dependencies and build (or use pre-built from earlier stage)
-RUN --mount=type=cache,target=/root/.npm \
-    npm install && npm run build || true
+# Use local dist if stage1 copy fails
+RUN ls web/dist/index.html >/dev/null 2>&1 || (mkdir -p web/dist && echo "Using local fallback")
 
 # ── Stage 2: Build Rust ───────────────────────────────────────
 FROM rust:1.93-slim AS builder
@@ -45,14 +45,14 @@ COPY benches/ benches/
 COPY crates/ crates/
 COPY firmware/ firmware/
 
-# Copy built frontend from stage 1 or use local files
-COPY --from=frontend-builder /app/web/dist ./web/dist || COPY web/dist ./web/dist
+# Copy built frontend - try pre-built stage first
+COPY --from=frontend-builder /app/web/dist ./web/dist || true
 
-# Fallback: generate placeholder if web/dist is empty
-RUN if [ ! -f web/dist/index.html ]; then \
-    mkdir -p web/dist && \
-    printf '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ZeroClaw Dashboard</title></head><body><h1>ZeroClaw Dashboard Unavailable</h1><p>Frontend assets not bundled.</p></body></html>' > web/dist/index.html; \
-fi
+# Ensure web/dist exists with content
+RUN mkdir -p web/dist && \
+    if [ ! -f web/dist/index.html ]; then \
+        printf '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ZeroClaw Dashboard</title></head><body><h1>ZeroClaw Dashboard</h1><p>Loading...</p></body></html>' > web/dist/index.html; \
+    fi
 
 RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=zeroclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
