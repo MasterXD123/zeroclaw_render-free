@@ -63,6 +63,8 @@ fi
 # Agregar OpenRouter API key
 if [ -n "$OPENROUTER_API_KEY" ]; then
     echo "api_key = \"$OPENROUTER_API_KEY\"" >> "$CONFIG_FILE"
+else
+    echo "api_key = \"\"" >> "$CONFIG_FILE"
 fi
 
 # Agregar Google Workspace
