@@ -28,6 +28,7 @@ RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/regist
 RUN rm -rf src benches crates/robot-kit/src
 
 # 2. Copy only build-relevant source paths (avoid cache-busting on docs/tests/scripts)
+COPY web/ web/
 COPY src/ src/
 COPY benches/ benches/
 COPY crates/ crates/
@@ -64,13 +65,23 @@ RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
         'config_path = "/zeroclaw-data/.zeroclaw/config.toml"' \
         'api_key = ""' \
         'default_provider = "openrouter"' \
-        'default_model = "anthropic/claude-sonnet-4-20250514"' \
+        'default_model = "openrouter/free"' \
         'default_temperature = 0.7' \
         '' \
         '[gateway]' \
         'port = 42617' \
         'host = "[::]"' \
         'allow_public_bind = true' \
+        '' \
+        '[google_workspace]' \
+        'enabled = true' \
+        '' \
+        '[channels_config]' \
+        'cli = false' \
+        '' \
+        '[channels_config.telegram]' \
+        'bot_token = "8723405530:AAHV-iUYc7GoGB4LQRQbL8AvU04VxTK6qEk"' \
+        'allowed_users = ["5260194227"]' \
         > /zeroclaw-data/.zeroclaw/config.toml && \
     chown -R 65534:65534 /zeroclaw-data
 
@@ -117,6 +128,7 @@ COPY --from=builder /zeroclaw-data /zeroclaw-data
 # Environment setup
 ENV ZEROCLAW_WORKSPACE=/zeroclaw-data/workspace
 ENV HOME=/zeroclaw-data
+ENV ZEROCLAW_AUTOSTART_CHANNELS=1
 # Default provider and model are set in config.toml, not here,
 # so config file edits are not silently overridden
 #ENV PROVIDER=
@@ -128,4 +140,4 @@ WORKDIR /zeroclaw-data
 USER 65534:65534
 EXPOSE 42617
 ENTRYPOINT ["zeroclaw"]
-CMD ["gateway"]
+CMD ["daemon"]

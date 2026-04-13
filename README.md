@@ -37,6 +37,7 @@ Este es un fork de [ZeroClaw-free](https://github.com/MasterXD123/zeroclaw-free)
 | Cron Jobs | ✅ | Tareas programadas |
 | Agent Loop | ✅ | Orquestación de agentes Rust |
 | Agentic-Bridge | ✅ | Mejora de prompts |
+| Google Workspace | ✅ | Gmail, Drive, Calendar, Docs, Sheets, Slides |
 
 ### Diferencias vs Original
 
@@ -240,6 +241,9 @@ En la sección **Environment Variables**, añade:
 | `TELEGRAM_ALLOWED_USERS` | Tu user ID de Telegram | Usuarios permitidos en Telegram |
 | `NOTION_KEY` | Tu token de Notion | Integración con Notion |
 | `GITHUB_TOKEN` | Tu token de GitHub | Integración con GitHub |
+| `GOOGLE_REFRESH_TOKEN` | Token de OAuth de Google | Integración con Workspace |
+| `GOOGLE_CLIENT_ID` | Client ID de Google | OAuth Google |
+| `GOOGLE_CLIENT_SECRET` | Client Secret de Google | OAuth Google |
 
 **Notas:**
 - La variable correcta es `OPENROUTER_API_KEY` (no `OPENAI_API_KEY`)
@@ -428,6 +432,22 @@ skills/
 | `skill-adapter` | Adapta skills de otras plataformas |
 | `features` | Lista todas las capacidades del sistema |
 | `setup-assistant` | Conectar APIs (Telegram, GitHub, etc.) |
+
+### Google Workspace Integration
+
+ZeroClaw incluye integración completa con Google Workspace (para cuentas personales Gmail):
+
+| Servicio | API Actions |
+|----------|-------------|
+| **Gmail** | list, get, send, draft, delete, attachments |
+| **Drive** | list, get, create, update, delete |
+| **Calendar** | list, get, create, update, delete |
+| **Docs** | list, get, create, update, delete |
+| **Sheets** | list, get, create, update, append, delete |
+| **Slides** | create, get, add_slide |
+| **Chat** | send, list |
+
+Para configurar, necesitas un **OAuth refresh token**. Ver [GOOGLE_WORKSPACE.md](./GOOGLE_WORKSPACE.md) para documentación completa.
 
 ---
 

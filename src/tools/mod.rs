@@ -18,10 +18,8 @@
 pub mod browser;
 pub mod browser_open;
 pub mod calculator;
-pub mod code_runner;
-pub mod decision;
-pub mod validator;
 pub mod cli_discovery;
+pub mod code_runner;
 pub mod composio;
 pub mod content_search;
 pub mod cron_add;
@@ -30,6 +28,7 @@ pub mod cron_remove;
 pub mod cron_run;
 pub mod cron_runs;
 pub mod cron_update;
+pub mod decision;
 pub mod delegate;
 pub mod file_edit;
 pub mod file_read;
@@ -61,6 +60,7 @@ pub mod shell;
 pub mod task_tracker;
 pub mod time_tracker;
 pub mod traits;
+pub mod validator;
 pub mod web_fetch;
 pub mod web_search_tool;
 
@@ -77,7 +77,6 @@ pub use cron_run::CronRunTool;
 pub use cron_runs::CronRunsTool;
 pub use cron_update::CronUpdateTool;
 pub use decision::DecisionTool;
-pub use validator::ValidatorTool;
 pub use delegate::DelegateTool;
 pub use file_edit::FileEditTool;
 pub use file_read::FileReadTool;
@@ -112,6 +111,7 @@ pub use time_tracker::TimeTrackerTool;
 pub use traits::Tool;
 #[allow(unused_imports)]
 pub use traits::{ToolResult, ToolSpec};
+pub use validator::ValidatorTool;
 pub use web_fetch::WebFetchTool;
 pub use web_search_tool::WebSearchTool;
 
@@ -264,7 +264,10 @@ pub fn all_tools_with_runtime(
             workspace_dir.to_path_buf(),
         )),
         Arc::new(GitHubTool::new(security.clone())),
-        Arc::new(GoogleWorkspaceTool::new(security.clone())),
+        Arc::new(GoogleWorkspaceTool::new(
+            security.clone(),
+            root_config.google_workspace.clone(),
+        )),
         Arc::new(NotionTool::new(security.clone())),
     ];
 

@@ -166,6 +166,10 @@ pub struct Config {
     #[serde(default)]
     pub composio: ComposioConfig,
 
+    /// Google Workspace integration (`[google_workspace]`).
+    #[serde(default)]
+    pub google_workspace: GoogleWorkspaceConfig,
+
     /// Secrets encryption configuration (`[secrets]`).
     #[serde(default)]
     pub secrets: SecretsConfig,
@@ -1063,6 +1067,47 @@ impl Default for ComposioConfig {
             enabled: false,
             api_key: None,
             entity_id: default_entity_id(),
+        }
+    }
+}
+
+// ── Google Workspace (direct API access) ─────────────────────────────
+
+/// Google Workspace integration (`[google_workspace]` section).
+///
+/// Provides direct access to Gmail, Drive, Calendar, Docs, Sheets, Slides, and Chat APIs.
+/// Supports both OAuth 2.0 (personal Gmail) and Service Account (Google Workspace).
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct GoogleWorkspaceConfig {
+    /// Enable Google Workspace integration
+    #[serde(default, alias = "enable")]
+    pub enabled: bool,
+    /// OAuth 2.0 refresh token for personal Gmail accounts (stored encrypted when secrets.encrypt = true)
+    #[serde(default)]
+    pub refresh_token: Option<String>,
+    /// OAuth 2.0 client ID
+    #[serde(default)]
+    pub client_id: Option<String>,
+    /// OAuth 2.0 client secret
+    #[serde(default)]
+    pub client_secret: Option<String>,
+    /// Service account JSON content (stored encrypted when secrets.encrypt = true)
+    #[serde(default)]
+    pub service_account_json: Option<String>,
+    /// Path to service account JSON file
+    #[serde(default)]
+    pub service_account_path: Option<String>,
+}
+
+impl Default for GoogleWorkspaceConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            refresh_token: None,
+            client_id: None,
+            client_secret: None,
+            service_account_json: None,
+            service_account_path: None,
         }
     }
 }
@@ -3850,6 +3895,7 @@ impl Default for Config {
             tunnel: TunnelConfig::default(),
             gateway: GatewayConfig::default(),
             composio: ComposioConfig::default(),
+            google_workspace: GoogleWorkspaceConfig::default(),
             secrets: SecretsConfig::default(),
             browser: BrowserConfig::default(),
             http_request: HttpRequestConfig::default(),
@@ -5806,6 +5852,7 @@ default_temperature = 0.7
             tunnel: TunnelConfig::default(),
             gateway: GatewayConfig::default(),
             composio: ComposioConfig::default(),
+            google_workspace: GoogleWorkspaceConfig::default(),
             secrets: SecretsConfig::default(),
             browser: BrowserConfig::default(),
             http_request: HttpRequestConfig::default(),
@@ -5989,6 +6036,7 @@ tool_dispatcher = "xml"
             tunnel: TunnelConfig::default(),
             gateway: GatewayConfig::default(),
             composio: ComposioConfig::default(),
+            google_workspace: GoogleWorkspaceConfig::default(),
             secrets: SecretsConfig::default(),
             browser: BrowserConfig::default(),
             http_request: HttpRequestConfig::default(),
