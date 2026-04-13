@@ -59,6 +59,11 @@ if [ -n "$GITHUB_TOKEN" ]; then
     echo "token = \"$GITHUB_TOKEN\"" >> "$CONFIG_FILE"
 fi
 
+# Agregar OpenRouter API key
+if [ -n "$OPENROUTER_API_KEY" ]; then
+    echo "api_key = \"$OPENROUTER_API_KEY\"" >> "$CONFIG_FILE"
+fi
+
 echo "Config generated:"
 cat "$CONFIG_FILE"
 
