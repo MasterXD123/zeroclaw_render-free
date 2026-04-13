@@ -2,9 +2,8 @@
 //! Supports OAuth 2.0 (personal Gmail) and Service Account authentication.
 
 use super::traits::{Tool, ToolResult};
-use crate::config::GoogleWorkspaceConfig;
+use crate::config::schema::GoogleWorkspaceConfig;
 use crate::security::SecurityPolicy;
-use anyhow::anyhow;
 use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::{json, Value};
@@ -544,7 +543,7 @@ impl Tool for GoogleWorkspaceTool {
                     .and_then(|p| p.get("max_results"))
                     .and_then(|v| v.as_u64())
                     .unwrap_or(100) as u32;
-                let page_token = params
+                let _page_token = params
                     .and_then(|p| p.get("pageToken"))
                     .and_then(|v| v.as_str());
                 let mime_type_filter = params
