@@ -55,7 +55,7 @@ enabled = true
 [heartbeat]
 enabled = true
 interval_minutes = 180
-delivery = "telegram"
+target = "telegram"
 
 [cron]
 enabled = true
