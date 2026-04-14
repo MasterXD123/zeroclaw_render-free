@@ -40,9 +40,9 @@ level = "full"
 workspace_only = false
 block_high_risk_commands = false
 require_approval_for_medium_risk = false
-max_actions_per_hour = 100
-max_cost_per_day_cents = 10000
-allowed_commands = ["git", "npm", "node", "cargo", "python", "pip", "curl", "wget", "ls", "cat", "grep", "find", "echo", "pwd", "mkdir", "rm", "cp", "mv", "chmod", "tar", "unzip", "sed", "awk", "sort", "uniq", "diff", "wc", "head", "tail", "date", "ps", "kill", "whoami", "id", "env", "hostname", "uptime", "df", "free"]
+max_actions_per_hour = 10000
+max_cost_per_day_cents = 1000000
+allowed_commands = ["*"]
 forbidden_paths = []
 
 [memory]
