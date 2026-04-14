@@ -45,6 +45,21 @@ max_cost_per_day_cents = 1000000
 allowed_commands = ["*"]
 forbidden_paths = []
 
+[skills]
+open_skills_enabled = true
+prompt_injection_mode = "full"
+
+[scheduler]
+enabled = true
+
+[heartbeat]
+enabled = true
+interval_minutes = 180
+delivery = "telegram"
+
+[cron]
+enabled = true
+
 [memory]
 backend = "sqlite"
 auto_save = true
