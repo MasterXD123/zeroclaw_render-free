@@ -14,7 +14,7 @@ RUN mkdir -p dist && \
     npm install && npm run build || true
 
 # ── Stage 2: Build Rust ───────────────────────────────────────
-FROM rust:1.93-slim AS builder
+FROM rust:1.94-slim AS builder
 
 WORKDIR /app
 
